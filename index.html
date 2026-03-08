@@ -265,6 +265,106 @@ tbody tr:hover td{background:var(--ice);cursor:pointer;}
   .nav{padding:0 1rem;}
   .stats{grid-template-columns:repeat(2,1fr);}
 }
+
+  /* ── MOBILE RESPONSIVE ───────────────────────────────────── */
+@media(max-width:768px){
+
+  /* NAV */
+  .nav{ padding:0 1rem; height:54px; }
+  .nav-name{ font-size:1rem; }
+  .btn-ghost{ padding:.3rem .55rem; font-size:.72rem; }
+  .nav-right{ gap:.4rem; }
+
+  /* PAGE */
+  .page{ padding:1rem .75rem 3rem; }
+
+  /* STATS — 2 columns */
+  .stats{
+    grid-template-columns: repeat(2,1fr) !important;
+    gap:.65rem;
+  }
+  .stat{ padding:.9rem 1rem; }
+  .stat-val{ font-size:1.6rem; }
+
+  /* DASH HEADER */
+  .dhead{
+    flex-direction:column;
+    align-items:stretch;
+    gap:.65rem;
+  }
+  .dhead-right{
+    flex-direction:column;
+    align-items:stretch;
+    gap:.5rem;
+  }
+  .search{ width:100%; }
+  .search input{
+    width:100% !important;
+  }
+  .pills{ flex-wrap:wrap; gap:.35rem; }
+  .pill{ font-size:.72rem; padding:.25rem .65rem; }
+
+  /* TABLE — hide less important cols, allow scroll */
+  .tcard{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  table{ min-width:100%; }
+
+  /* Hide Date, Items, Actions columns on mobile */
+  thead th:nth-child(3),
+  thead th:nth-child(4),
+  thead th:nth-child(7),
+  tbody td:nth-child(3),
+  tbody td:nth-child(4),
+  tbody td:nth-child(7){ display:none; }
+
+  th{ padding:.65rem .75rem; font-size:.62rem; }
+  tbody td{ padding:.75rem .75rem; font-size:.82rem; }
+  .caddr{ max-width:120px; }
+  .amtcell{ font-size:.95rem; }
+
+  /* MODAL — full screen */
+  .overlay{ padding:0; align-items:flex-end; }
+  .modal{
+    border-radius:16px 16px 0 0;
+    max-height:95vh;
+    width:100%;
+  }
+  .modal-bar{ padding:.75rem 1rem; }
+  .modal-bar-lbl{ font-size:.75rem; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .modal-bar-acts{ gap:.35rem; }
+
+  /* INVOICE DOC */
+  #invDoc{ padding:1.25rem 1rem 2rem; }
+  .inv-hd{
+    grid-template-columns:1fr;
+    gap:.75rem;
+  }
+  .inv-numbox{ text-align:left; }
+  .inv-num{ font-size:1.6rem; }
+  .inv-parties{
+    grid-template-columns:1fr;
+    gap:1rem;
+  }
+  .inv-parties > div:last-child{ text-align:left !important; }
+  .inv-parties > div:last-child .p-addr{ text-align:left !important; }
+  .inv-tbl thead th,
+  .inv-tbl tbody td{ padding:.55rem .65rem; font-size:.78rem; }
+  .totals-wrap{ justify-content:stretch; }
+  .totals-box{ min-width:100%; }
+  .tot-row{ font-size:.82rem; }
+  .grand{ font-size:1.2rem; }
+  .inv-foot{ flex-direction:column; gap:.5rem; padding:.75rem 1rem; }
+
+  /* CFG PANEL */
+  .cfg-grid{ grid-template-columns:1fr; }
+  .cfg-inner{ padding:1rem 1rem 1.25rem; }
+}
+
+@media(max-width:400px){
+  .stats{ grid-template-columns:1fr 1fr !important; }
+  .stat-val{ font-size:1.4rem; }
+  .nav-name{ font-size:.9rem; }
+}
+
 </style>
 </head>
 <body>
@@ -659,8 +759,6 @@ function getInvNum(r){
 function build(clients, lineItems){
   const liNums = lineItems.map(li=>getInvNum(li)).filter(Boolean).join(', ') || '(none)';
   const clNums = clients.slice(0,5).map(c=>getInvNum(c)).join(', ');
-  alert('🔍 DEBUG\n\nLineItem invoice#s:\n' + liNums + '\n\nClient invoice#s (first 5):\n' + clNums);
-
   // Filter out rows where invoice number is empty or looks like a junk value
   // (addresses, status values, amounts accidentally parsed as invoice rows)
   const validClients = clients.filter(c => {
