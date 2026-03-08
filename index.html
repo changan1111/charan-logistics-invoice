@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>InvoiceManager</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<style>
+:root{
+  --ink:#0b1d3a; --navy:#13305e; --mid:#1c4480; --steel:#2d5f9e; --sky:#3b82c4;
+  --ice:#e8f0fb; --pale:#f2f6fd; --white:#ffffff;
+  --muted:#6b82a8; --border:#d3dff0;
+  --paid-bg:#e4f7ee; --paid-tx:#0a7a4b;
+  --pend-bg:#fff4e0; --pend-tx:#b86a00;
+  --over-bg:#fdeaea; --over-tx:#c0282e;
+  --sh-sm:0 2px 8px rgba(11,29,58,.08);
+  --sh-md:0 8px 30px rgba(11,29,58,.13);
+  --sh-lg:0 24px 60px rgba(11,29,58,.22);
+  --r:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'Outfit',sans-serif;background:var(--pale);color:var(--ink);min-height:100vh;line-height:1.5;}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:var(--pale);}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+
+/* ── NAV ─────────────────────────────────────────────────── */
+.nav{
+  position:sticky;top:0;z-index:300;background:var(--ink);
+  height:60px;display:flex;align-items:center;padding:0 2rem;
+  box-shadow:0 1px 0 rgba(255,255,255,.06),0 4px 20px rgba(11,29,58,.4);
+}
+.nav-brand{display:flex;align-items:center;gap:.7rem;flex:1;}
+.nav-logo{
+  width:34px;height:34px;border-radius:8px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--sky),var(--steel));
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 0 1px rgba(255,255,255,.15);
+}
+.nav-logo svg{width:18px;height:18px;fill:white;}
+.nav-name{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:600;color:white;}
+.nav-name span{color:var(--sky);}
+.nav-right{display:flex;align-items:center;gap:.6rem;}
+
+/* ── BUTTONS ─────────────────────────────────────────────── */
+.btn{
+  display:inline-flex;align-items:center;gap:.4rem;
+  padding:.45rem 1rem;border-radius:8px;
+  font-family:'Outfit',sans-serif;font-size:.82rem;font-weight:500;
+  cursor:pointer;border:none;transition:all .18s;text-decoration:none;white-space:nowrap;
+}
+.btn-primary{background:var(--sky);color:white;}
+.btn-primary:hover{background:var(--steel);transform:translateY(-1px);box-shadow:0 4px 12px rgba(59,130,196,.4);}
+.btn-ghost{background:rgba(255,255,255,.1);color:rgba(255,255,255,.85);border:1px solid rgba(255,255,255,.15);}
+.btn-ghost:hover{background:rgba(255,255,255,.18);}
+.btn-white{background:white;color:var(--navy);border:1.5px solid var(--border);}
+.btn-white:hover{border-color:var(--sky);color:var(--sky);}
+.btn-sm{padding:.3rem .7rem;font-size:.78rem;}
+
+/* ── CONFIG ─────────────────────────────────────────────── */
+.cfg-panel{
+  background:linear-gradient(110deg,var(--navy) 0%,var(--mid) 65%,#1f5299 100%);
+  border-bottom:1px solid rgba(255,255,255,.08);
+  overflow:hidden;max-height:300px;
+  transition:max-height .4s ease,opacity .3s ease;
+}
+.cfg-panel.hidden{max-height:0;opacity:0;}
+.cfg-inner{padding:1.4rem 2rem 1.75rem;}
+.cfg-head{margin-bottom:1rem;}
+.cfg-head h3{color:white;font-size:.95rem;font-weight:600;margin-bottom:.2rem;}
+.cfg-head p{color:rgba(255,255,255,.5);font-size:.78rem;}
+.cfg-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:.7rem;margin-bottom:1rem;}
+.cfg-field label{display:block;font-size:.68rem;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.28rem;}
+.cfg-field input{
+  width:100%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);
+  border-radius:7px;padding:.48rem .78rem;color:white;
+  font-family:'Outfit',sans-serif;font-size:.85rem;transition:all .18s;
+}
+.cfg-field input::placeholder{color:rgba(255,255,255,.3);}
+.cfg-field input:focus{outline:none;background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.45);}
+.cfg-row{display:flex;align-items:center;gap:.75rem;}
+.cfg-status{font-size:.78rem;color:rgba(255,255,255,.55);}
+
+/* ── PAGE ────────────────────────────────────────────────── */
+.page{max-width:1180px;margin:0 auto;padding:1.8rem 1.5rem 3rem;}
+
+/* ── STATS ───────────────────────────────────────────────── */
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:1rem;margin-bottom:1.8rem;}
+@media(max-width:850px){.stats{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:520px){.stats{grid-template-columns:repeat(2,1fr);}}
+.stat{
+  background:var(--white);border-radius:var(--r);padding:1.15rem 1.25rem;
+  border:1px solid var(--border);box-shadow:var(--sh-sm);
+  overflow:hidden;position:relative;animation:up .4s ease both;
+}
+.stat::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--steel),var(--sky));
+  transform:scaleX(0);transform-origin:left;transition:transform .3s;
+}
+.stat:hover::after{transform:scaleX(1);}
+.stat-lbl{font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.4rem;}
+.stat-val{font-family:'Cormorant Garamond',serif;font-size:1.95rem;font-weight:700;color:var(--ink);line-height:1;}
+.stat-val.c-paid{color:var(--paid-tx);}
+.stat-val.c-pend{color:var(--pend-tx);}
+.stat-val.c-over{color:var(--over-tx);}
+.stat-sub{font-size:.72rem;color:var(--muted);margin-top:.25rem;}
+
+/* ── DASH HEAD ───────────────────────────────────────────── */
+.dhead{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;margin-bottom:1rem;}
+.dhead-title{font-family:'Cormorant Garamond',serif;font-size:1.35rem;color:var(--ink);}
+.dhead-right{display:flex;align-items:center;gap:.65rem;flex-wrap:wrap;}
+
+.search{position:relative;}
+.search input{
+  width:210px;background:white;border:1.5px solid var(--border);
+  border-radius:8px;padding:.4rem .75rem .4rem 2rem;
+  font-family:'Outfit',sans-serif;font-size:.82rem;color:var(--ink);transition:all .2s;
+}
+.search input:focus{outline:none;border-color:var(--sky);width:250px;}
+.search-ico{position:absolute;left:.6rem;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;line-height:0;}
+
+.pills{display:flex;gap:.4rem;}
+.pill{
+  padding:.28rem .78rem;border-radius:20px;font-size:.74rem;font-weight:500;
+  cursor:pointer;background:white;color:var(--muted);border:1.5px solid var(--border);
+  transition:all .18s;font-family:'Outfit',sans-serif;
+}
+.pill:hover,.pill.a-all{background:var(--navy);color:white;border-color:var(--navy);}
+.pill.a-paid{background:var(--paid-bg);color:var(--paid-tx);border-color:var(--paid-tx);}
+.pill.a-pending{background:var(--pend-bg);color:var(--pend-tx);border-color:var(--pend-tx);}
+.pill.a-overdue{background:var(--over-bg);color:var(--over-tx);border-color:var(--over-tx);}
+
+/* ── TABLE ───────────────────────────────────────────────── */
+.tcard{background:white;border-radius:var(--r);border:1px solid var(--border);box-shadow:var(--sh-sm);overflow:hidden;animation:up .45s ease .1s both;}
+table{width:100%;border-collapse:collapse;}
+thead tr{background:var(--ink);}
+th{padding:.78rem 1.1rem;font-size:.67rem;text-transform:uppercase;letter-spacing:.1em;font-weight:500;color:rgba(255,255,255,.6);text-align:left;}
+th.r{text-align:right;}th.c{text-align:center;}
+tbody td{padding:.88rem 1.1rem;border-bottom:1px solid var(--border);font-size:.85rem;vertical-align:middle;}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr{transition:background .12s;}
+tbody tr:hover td{background:var(--ice);cursor:pointer;}
+
+.inum{font-weight:600;color:var(--sky);letter-spacing:.02em;}
+.cname{font-weight:500;color:var(--ink);display:block;}
+.caddr{font-size:.77rem;color:var(--muted);display:block;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.amtcell{font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-weight:600;}
+
+.badge{display:inline-flex;align-items:center;gap:.3rem;padding:.2rem .62rem;border-radius:20px;font-size:.69rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;}
+.b-paid{background:var(--paid-bg);color:var(--paid-tx);}
+.b-pending{background:var(--pend-bg);color:var(--pend-tx);}
+.b-overdue{background:var(--over-bg);color:var(--over-tx);}
+.bdot{width:5px;height:5px;border-radius:50%;background:currentColor;}
+.acts{display:flex;gap:.35rem;justify-content:center;}
+
+/* ── STATE ───────────────────────────────────────────────── */
+.state{padding:3.8rem 2rem;text-align:center;}
+.state-ico{font-size:2.2rem;margin-bottom:.7rem;}
+.state-title{font-family:'Cormorant Garamond',serif;font-size:1.2rem;margin-bottom:.35rem;}
+.state-msg{font-size:.82rem;color:var(--muted);max-width:360px;margin:0 auto;line-height:1.65;}
+.spin{display:inline-block;width:26px;height:26px;border:2.5px solid var(--border);border-top-color:var(--sky);border-radius:50%;animation:rot .7s linear infinite;margin-bottom:.7rem;}
+@keyframes rot{to{transform:rotate(360deg);}}
+@keyframes up{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:none;}}
+
+/* ── OVERLAY / MODAL ─────────────────────────────────────── */
+.overlay{
+  display:none;position:fixed;inset:0;z-index:500;
+  background:rgba(7,18,38,.62);backdrop-filter:blur(5px);
+  align-items:center;justify-content:center;padding:1.5rem;
+}
+.overlay.open{display:flex;}
+.modal{
+  background:white;border-radius:18px;
+  width:100%;max-width:800px;max-height:92vh;overflow-y:auto;
+  box-shadow:var(--sh-lg);
+  animation:pop .28s cubic-bezier(.34,1.4,.64,1) both;
+}
+@keyframes pop{from{opacity:0;transform:scale(.93) translateY(14px);}to{opacity:1;transform:none;}}
+
+.modal-bar{
+  position:sticky;top:0;z-index:10;background:white;
+  padding:.9rem 1.5rem;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid var(--border);
+}
+.modal-bar-lbl{font-size:.82rem;color:var(--muted);font-weight:500;}
+.modal-bar-acts{display:flex;gap:.45rem;}
+.xbtn{background:none;border:none;cursor:pointer;color:var(--muted);font-size:1.25rem;padding:.2rem .35rem;border-radius:6px;transition:all .15s;line-height:1;}
+.xbtn:hover{background:var(--pale);color:var(--ink);}
+
+/* ══════════════════════════════════════════════════════════
+   INVOICE DOCUMENT
+══════════════════════════════════════════════════════════ */
+#invDoc{padding:2.5rem 2.75rem;}
+
+/* Header: logo+name (left) | invoice# (right) */
+.inv-hd{display:grid;grid-template-columns:1fr auto;gap:2rem;align-items:flex-start;margin-bottom:2rem;}
+.inv-brand{display:flex;gap:.9rem;align-items:flex-start;}
+.inv-logo{
+  width:52px;height:52px;border-radius:10px;flex-shrink:0;
+  background:linear-gradient(140deg,var(--navy),var(--sky));
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 14px rgba(19,48,94,.25);
+}
+.inv-logo svg{width:26px;height:26px;fill:white;}
+.inv-biz-name{font-family:'Cormorant Garamond',serif;font-size:1.65rem;font-weight:600;color:var(--ink);line-height:1.1;margin-bottom:.25rem;}
+.inv-biz-addr{font-size:.8rem;color:var(--muted);line-height:1.75;}
+.inv-numbox{text-align:right;}
+.inv-num-lbl{font-size:.64rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:.3rem;}
+.inv-num{font-family:'Cormorant Garamond',serif;font-size:2.1rem;font-weight:700;color:var(--ink);line-height:1;}
+.inv-num-sub{font-size:.78rem;color:var(--muted);margin-top:.35rem;line-height:1.7;}
+
+/* Accent rule */
+.inv-rule{height:2px;background:linear-gradient(90deg,var(--navy),var(--sky) 60%,transparent 100%);border-radius:2px;margin-bottom:1.85rem;}
+
+/* Bill-to / From — client address prominently shown */
+.inv-parties{display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;margin-bottom:2rem;}
+.p-lbl{font-size:.64rem;text-transform:uppercase;letter-spacing:.1em;font-weight:600;color:var(--sky);margin-bottom:.5rem;}
+.p-name{font-weight:600;font-size:.98rem;color:var(--ink);margin-bottom:.2rem;}
+.p-addr{font-size:.83rem;color:var(--muted);line-height:1.8;}
+.p-status{margin-top:.65rem;}
+
+/* Line items */
+.inv-tbl{width:100%;border-collapse:collapse;margin-bottom:1.5rem;}
+.inv-tbl thead tr{background:var(--ink);}
+.inv-tbl thead th{padding:.65rem 1rem;font-size:.67rem;text-transform:uppercase;letter-spacing:.09em;font-weight:500;color:rgba(255,255,255,.65);text-align:left;}
+.inv-tbl thead th.r{text-align:right;}
+.inv-tbl thead th.c{text-align:center;}
+.inv-tbl tbody td{padding:.72rem 1rem;border-bottom:1px solid var(--border);font-size:.86rem;}
+.inv-tbl tbody tr:nth-child(even) td{background:#f6f8fd;}
+.inv-tbl tbody tr:last-child td{border-bottom:none;}
+.inv-tbl td.c{text-align:center;color:var(--muted);}
+.inv-tbl td.r{text-align:right;}
+.inv-tbl td.r.bold{font-weight:600;}
+
+/* Totals */
+.totals-wrap{display:flex;justify-content:flex-end;margin-bottom:2rem;}
+.totals-box{min-width:245px;}
+.tot-row{display:flex;justify-content:space-between;padding:.4rem 0;font-size:.85rem;border-bottom:1px solid var(--border);}
+.tot-row:last-child{border-bottom:none;margin-top:.35rem;padding-top:.6rem;font-size:1rem;font-weight:700;color:var(--ink);}
+.grand{font-family:'Cormorant Garamond',serif;font-size:1.35rem;color:var(--navy);}
+
+/* Footer */
+.inv-foot{background:var(--pale);border-radius:10px;padding:.9rem 1.25rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;}
+.inv-foot-note{font-size:.79rem;color:var(--muted);}
+
+/* ── PRINT ────────────────────────────────────────────────── */
+@media print{
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
+  body>*:not(.overlay){display:none!important;}
+  .overlay{display:block!important;position:static!important;background:none!important;}
+  .modal{max-height:none!important;box-shadow:none!important;animation:none!important;border-radius:0!important;width:100%!important;max-width:100%!important;}
+  .modal-bar,.modal-bar-acts{display:none!important;}
+}
+
+@media(max-width:680px){
+  .inv-hd{grid-template-columns:1fr;}
+  .inv-numbox{text-align:left;}
+  .inv-parties{grid-template-columns:1fr;}
+  #invDoc{padding:1.5rem;}
+  .page{padding:1.2rem .9rem 2rem;}
+  .nav{padding:0 1rem;}
+  .stats{grid-template-columns:repeat(2,1fr);}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-brand">
+    <div class="nav-logo">
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"/><path d="M8 13h8v1H8zm0 3h5v1H8z"/></svg>
+    </div>
+    <div class="nav-name">Invoice<span>Manager</span></div>
+  </div>
+  <div class="nav-right">
+    <button class="btn btn-ghost btn-sm" id="cfgToggle">⚙ Settings</button>
+    <button class="btn btn-ghost btn-sm" onclick="loadData()">↻ Refresh</button>
+    <a id="sheetLink" href="https://docs.google.com/spreadsheets" target="_blank" class="btn btn-primary btn-sm">Open Sheet ↗</a>
+  </div>
+</nav>
+
+<!-- CONFIG PANEL -->
+<div class="cfg-panel hidden" id="cfgPanel">
+  <div class="cfg-inner">
+    <div class="cfg-head">
+      <h3>📋 Google Sheets Connection</h3>
+      <p>Paste your full Sheet URL or ID. Tab names must be <b style="color:white">Clients</b> and <b style="color:white">LineItems</b>. Sheet must be published (File → Share → Publish to web → CSV).</p>
+    </div>
+    <div class="cfg-grid">
+      <div class="cfg-field">
+        <label>Google Sheet ID</label>
+        <input id="cfgId" placeholder="Paste full Sheet URL or bare ID…"/>
+      </div>
+      <div class="cfg-field">
+        <label>Business Name</label>
+        <input id="cfgName" value="My Business" placeholder="Your Company Name"/>
+      </div>
+      <div class="cfg-field">
+        <label>Business Address</label>
+        <input id="cfgAddr" value="123 Business St, Chennai, India" placeholder="123 Main St, City"/>
+      </div>
+      <div class="cfg-field" style="max-width:100px">
+        <label>Currency</label>
+        <input id="cfgCur" value="SGD" placeholder="SGD"/>
+      </div>
+    </div>
+    <div class="cfg-row">
+      <button class="btn btn-primary" onclick="saveConfig()">✓ Save &amp; Load</button>
+      <span class="cfg-status" id="cfgStatus"></span>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE -->
+<div class="page">
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat" style="animation-delay:.05s"><div class="stat-lbl">Total Invoices</div><div class="stat-val" id="s0">—</div></div>
+    <div class="stat" style="animation-delay:.1s"><div class="stat-lbl">Total Value</div><div class="stat-val" id="s1">—</div></div>
+    <div class="stat" style="animation-delay:.15s"><div class="stat-lbl">Paid</div><div class="stat-val c-paid" id="s2">—</div><div class="stat-sub" id="s2a"></div></div>
+    <div class="stat" style="animation-delay:.2s"><div class="stat-lbl">Pending</div><div class="stat-val c-pend" id="s3">—</div><div class="stat-sub" id="s3a"></div></div>
+    <div class="stat" style="animation-delay:.25s"><div class="stat-lbl">Overdue</div><div class="stat-val c-over" id="s4">—</div><div class="stat-sub" id="s4a"></div></div>
+  </div>
+
+  <!-- DASH HEADER -->
+  <div class="dhead">
+    <div class="dhead-title">All Invoices</div>
+    <div class="dhead-right">
+      <div class="search">
+        <span class="search-ico">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        </span>
+        <input id="qSearch" placeholder="Search client, invoice…" oninput="applyFilters()"/>
+      </div>
+      <div class="pills">
+        <button class="pill a-all" data-f="all"     onclick="setFilter('all',this)">All</button>
+        <button class="pill"       data-f="paid"    onclick="setFilter('paid',this)">Paid</button>
+        <button class="pill"       data-f="pending" onclick="setFilter('pending',this)">Pending</button>
+        <button class="pill"       data-f="overdue" onclick="setFilter('overdue',this)">Overdue</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="tcard">
+    <table>
+      <thead>
+        <tr>
+          <th>Invoice #</th>
+          <th>Client</th>
+          <th>Date</th>
+          <th class="c">Items</th>
+          <th class="r">Amount</th>
+          <th>Status</th>
+          <th class="c">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="tBody">
+        <tr><td colspan="7"><div class="state">
+          <div class="state-ico">📋</div>
+          <div class="state-title">Connect Your Sheet</div>
+          <div class="state-msg">Click ⚙ Settings above, paste your Google Sheet ID, and click Save &amp; Load.</div>
+        </div></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay" onclick="overlayClick(event)">
+  <div class="modal" id="modal">
+    <div class="modal-bar">
+      <span class="modal-bar-lbl" id="mLabel">Invoice</span>
+      <div class="modal-bar-acts">
+        <button class="btn btn-white btn-sm" onclick="printInv()">🖨 Print</button>
+        <button class="btn btn-primary btn-sm" onclick="dlPDF()">⬇ PDF</button>
+        <button class="xbtn" onclick="closeModal()">✕</button>
+      </div>
+    </div>
+    <div id="invDoc"></div>
+  </div>
+</div>
+
+<script>
+/* ═══ STATE ════════════════════════════════════════════════ */
+let CFG = {
+  id:   localStorage.getItem('im_id')   || '',
+  name: localStorage.getItem('im_name') || 'Charan Logistics',
+  addr: localStorage.getItem('im_addr') || '',
+  cur:  localStorage.getItem('im_cur')  || 'SGD ',
+};
+let ALL=[], SHOWN=[], activeFilter='all', curInv=null;
+
+/* ═══ INIT ═════════════════════════════════════════════════ */
+window.addEventListener('DOMContentLoaded', ()=>{
+  const el = (id)=>document.getElementById(id);
+
+  // Read fresh from localStorage each time page loads
+  const savedId   = localStorage.getItem('im_id')   || '';
+  const savedName = localStorage.getItem('im_name') || 'Charan Logistics';
+  const savedAddr = localStorage.getItem('im_addr') || '';
+  const savedCur  = localStorage.getItem('im_cur')  || '₹';
+
+  // Sync CFG from storage
+  CFG.id   = savedId;
+  CFG.name = savedName;
+  CFG.addr = savedAddr;
+  CFG.cur  = savedCur;
+
+  // Populate inputs
+  el('cfgId').value   = savedId;
+  el('cfgName').value = savedName;
+  el('cfgAddr').value = savedAddr;
+  el('cfgCur').value  = savedCur;
+
+  console.log('Loaded config — Sheet ID:', savedId || '(not set)');
+
+  el('cfgToggle').addEventListener('click',()=>el('cfgPanel').classList.toggle('hidden'));
+  updateSheetLink();
+  if(CFG.id) loadData();
+});
+
+/* ═══ CONFIG ════════════════════════════════════════════════ */
+function extractSheetId(raw){
+  raw = raw.trim();
+
+  // ❌ Detect wrong published /d/e/ URL and warn immediately
+  if(raw.includes('/spreadsheets/d/e/')){
+    alert('⚠️ Wrong URL!\n\nYou pasted the "Publish to web" link.\n\nInstead, copy the URL directly from your browser address bar while the sheet is open.\n\nIt should look like:\nhttps://docs.google.com/spreadsheets/d/1BxiMVs0XRA5.../edit');
+    return '';
+  }
+
+  // ✅ Normal editor URL: /spreadsheets/d/SHEET_ID/edit
+  const urlMatch = raw.match(/\/spreadsheets\/d\/([a-zA-Z0-9_-]{20,})/);
+  if(urlMatch) return urlMatch[1];
+
+  // ✅ Already a bare ID (long alphanumeric string, min 20 chars)
+  if(/^[a-zA-Z0-9_-]{20,}$/.test(raw)) return raw;
+
+  // Too short — probably wrong
+  if(raw.length > 0 && raw.length < 20){
+    alert('⚠️ That does not look like a valid Sheet ID.\n\nPlease copy the URL from your browser address bar while the sheet is open.\nIt should look like:\nhttps://docs.google.com/spreadsheets/d/1BxiMVs0XRA5.../edit');
+    return '';
+  }
+
+  return raw;
+}
+
+function saveConfig(){
+  const rawId   = ge('cfgId').value.trim();
+  const cleanId = extractSheetId(rawId);
+  const name    = ge('cfgName').value.trim() || 'My Business';
+  const addr    = ge('cfgAddr').value.trim() || '';
+  const cur     = ge('cfgCur').value.trim()  || '₹';
+
+  // Update CFG object
+  CFG.id   = cleanId;
+  CFG.name = name;
+  CFG.addr = addr;
+  CFG.cur  = cur;
+
+  // Show the clean extracted ID back in the input
+  ge('cfgId').value = cleanId;
+
+  // ── Console diagnostics ──
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  console.log('📋 Raw input   :', rawId);
+  console.log('🔑 Extracted ID:', cleanId);
+  console.log('📛 Biz Name    :', name);
+  console.log('📍 Address     :', addr);
+  console.log('🔗 Sheet URL   :', 'https://docs.google.com/spreadsheets/d/' + cleanId + '/edit');
+  console.log('📡 CSV Test URL:', 'https://docs.google.com/spreadsheets/d/' + cleanId + '/gviz/tq?tqx=out:csv&sheet=Clients');
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+  if(!cleanId){
+    console.error('❌ Sheet ID is empty! Paste the URL from your browser address bar while the sheet is open.');
+    return;
+  }
+  if(cleanId.length < 20){
+    console.warn('⚠️ Sheet ID looks too short (' + cleanId.length + ' chars). Expected ~44 chars. Got: ' + cleanId);
+  } else {
+    console.log('✅ Sheet ID looks valid (' + cleanId.length + ' chars)');
+  }
+
+  // Save each key separately
+  try {
+    localStorage.setItem('im_id',   cleanId);
+    localStorage.setItem('im_name', name);
+    localStorage.setItem('im_addr', addr);
+    localStorage.setItem('im_cur',  cur);
+    console.log('💾 Saved to localStorage OK');
+  } catch(e) {
+    console.warn('localStorage save failed:', e);
+  }
+
+  updateSheetLink();
+  ge('cfgStatus').textContent = '✓ Saved  (ID: ' + cleanId.substring(0,14) + '...)';
+  setTimeout(()=>ge('cfgStatus').textContent='', 4000);
+  ge('cfgPanel').classList.add('hidden');
+  loadData();
+}
+function updateSheetLink(){
+  ge('sheetLink').href = CFG.id
+    ? `https://docs.google.com/spreadsheets/d/${CFG.id}/edit`
+    : 'https://docs.google.com/spreadsheets';
+}
+
+/* ═══ DATA ══════════════════════════════════════════════════ */
+async function loadData(){
+  if(!CFG.id){ stateRow('📋','Connect Your Sheet','Click ⚙ Settings, paste your Google Sheet URL or ID, and click Save & Load.'); return; }
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  console.log('🔄 Loading data for Sheet ID:', CFG.id);
+  loadingRow();
+  try{
+    const [clients, lineItems] = await Promise.all([
+      fetchSheet('Clients'), fetchSheet('LineItems')
+    ]);
+    console.log('✅ Clients rows loaded   :', clients.length);
+    console.log('✅ LineItems rows loaded :', lineItems.length);
+    if(clients.length > 0) console.log('   First row keys:', Object.keys(clients[0]).join(', '));
+    ALL = build(clients, lineItems);
+    console.log('✅ Invoices built:', ALL.length);
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    renderStats();
+    applyFilters();
+  } catch(e){
+    const msg = e.message||'Unknown error';
+    ge('tBody').innerHTML=`<tr><td colspan="7"><div class="state">
+      <div class="state-ico">⚠️</div>
+      <div class="state-title">Could Not Load Data</div>
+      <div class="state-msg" style="max-width:560px;text-align:left">
+        <b>Error:</b> ${msg}
+        <br><br>
+        <b>Follow these steps to fix:</b>
+        <ol style="margin:.5rem 0 0 1.2rem;line-height:2">
+          <li>Open your Google Sheet</li>
+          <li>Click <b>File → Share → Publish to web</b></li>
+          <li>Set left dropdown to <b>"Entire Document"</b></li>
+          <li>Set right dropdown to <b>"Comma-separated values (.csv)"</b></li>
+          <li>Click <b>Publish</b> → confirm <b>OK</b></li>
+          <li>Come back here and click <b>↻ Try Again</b></li>
+        </ol>
+        <br>
+        Also confirm your two sheet tab names at the bottom of Google Sheets are:<br>
+        <b>Clients</b> &nbsp;and&nbsp; <b>LineItems</b>
+      </div>
+      <div style="margin-top:1.4rem;display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap">
+        <button class="btn btn-primary btn-sm" onclick="loadData()">↻ Try Again</button>
+        <button class="btn btn-white btn-sm" onclick="ge('cfgPanel').classList.remove('hidden')">⚙ Check Settings</button>
+        <a href="https://docs.google.com/spreadsheets/d/${CFG.id}/edit" target="_blank" class="btn btn-white btn-sm">Open Sheet ↗</a>
+      </div>
+    </div></td></tr>`;
+  }
+}
+
+// Try multiple possible tab name variants automatically
+async function fetchSheet(primaryName){
+  // Try these name variants in order
+  const variants = primaryName === 'Clients'
+    ? ['Clients', 'clients', 'Client', 'Sheet2', 'Sheet1']
+    : ['LineItems', 'Line Items', 'lineitems', 'Lineitems', 'Line_Items', 'Sheet1', 'Sheet2'];
+
+  let lastErr = '';
+  for(const name of variants){
+    try {
+      const url = `https://docs.google.com/spreadsheets/d/${CFG.id}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(name)}`;
+      let r;
+      try { r = await fetch(url); } catch(e){ lastErr=`Network error — sheet not published or ID wrong.`; continue; }
+      if(!r.ok){ lastErr=`Tab "${name}" → HTTP ${r.status}`; continue; }
+      const txt = await r.text();
+      if(txt.trim().startsWith('<!') || txt.trim().startsWith('<html')){ lastErr=`Sheet not published publicly.`; continue; }
+      if(txt.trim()===''){ lastErr=`Tab "${name}" is empty.`; continue; }
+      // success — log which name worked
+      console.log(`✅ Loaded "${primaryName}" using tab name: "${name}"`);
+      return parseCSV(txt);
+    } catch(e){ lastErr=e.message; continue; }
+  }
+  throw new Error(`Could not find "${primaryName}" tab. Tried: ${variants.join(', ')}. Last error: ${lastErr}`);
+}
+
+function parseCSV(raw){
+  const lines = splitCSVLines(raw.trim());
+  if(!lines.length) return [];
+  const hdr = parseCSVRow(lines[0]).map(h=>h.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,''));
+  console.log('CSV headers:', hdr.join(' | '));
+  const rows = lines.slice(1).map(l=>{
+    const v = parseCSVRow(l);
+    const o = {};
+    hdr.forEach((h,i)=>{ if(h) o[h] = (v[i]||'').trim(); });
+    return o;
+  }).filter(r=>Object.values(r).some(v=>v));
+  console.log('CSV first row:', JSON.stringify(rows[0]));
+  return rows;
+}
+
+// Properly split CSV respecting quoted fields with commas inside
+function parseCSVRow(line){
+  const out = [];
+  let cur = '', inQ = false, i = 0;
+  while(i < line.length){
+    const ch = line[i];
+    if(ch === '"'){
+      if(inQ && line[i+1] === '"'){ cur += '"'; i+=2; continue; } // escaped quote
+      inQ = !inQ;
+    } else if(ch === ',' && !inQ){
+      out.push(cur); cur = '';
+    } else {
+      cur += ch;
+    }
+    i++;
+  }
+  out.push(cur);
+  return out;
+}
+
+// Split into lines respecting quoted newlines
+function splitCSVLines(raw){
+  const lines = [];
+  let cur = '', inQ = false;
+  for(let i=0;i<raw.length;i++){
+    const ch = raw[i];
+    if(ch==='"') inQ=!inQ;
+    else if((ch==='\n'||ch==='\r') && !inQ){
+      if(cur.trim()) lines.push(cur);
+      cur=''; continue;
+    }
+    cur+=ch;
+  }
+  if(cur.trim()) lines.push(cur);
+  return lines;
+}
+
+// Keep old csvRow as alias
+function csvRow(line){ return parseCSVRow(line); }
+
+/* ── flexible column helpers ── */
+function getDesc(li){
+  return li.description||li.delivery_description||li.item||li.item_description||li.name||'—';
+}
+function getQty(li){
+  const v = parseFloat(li.qty||li.quantity||li.unit_optional||li.unit||'');
+  return isNaN(v)||v<=0 ? 1 : v;
+}
+function getPrice(li){
+  return parseFloat(li.unit_price||li.price||li.amount||0)||0;
+}
+function getInvNum(r){
+  // Your sheet uses "Invoice Number" → normalizes to "invoice_number"
+  const v = r.invoice_number||r.invoice_no||r.invoice_||r.invoice||r.id||'';
+  return String(v).trim();
+}
+
+function build(clients, lineItems){
+  const liNums = lineItems.map(li=>getInvNum(li)).filter(Boolean).join(', ') || '(none)';
+  const clNums = clients.slice(0,5).map(c=>getInvNum(c)).join(', ');
+  alert('🔍 DEBUG\n\nLineItem invoice#s:\n' + liNums + '\n\nClient invoice#s (first 5):\n' + clNums);
+
+  // Filter out rows where invoice number is empty or looks like a junk value
+  // (addresses, status values, amounts accidentally parsed as invoice rows)
+  const validClients = clients.filter(c => {
+    const num = getInvNum(c);
+    if(!num) return false;
+    if(num.includes(',')) return false;         // junk from bad CSV split
+    if(num.length > 30) return false;           // too long to be invoice number
+    if(/^(pending|paid|overdue)$/i.test(num)) return false; // status words
+    if(/^\d+$/.test(num)) return false;         // pure number like 312
+    if(/^[a-zA-Z\s]+$/.test(num)) return false; // pure words like Singapore
+    return true;
+  });
+
+  console.log('Valid clients after filter:', validClients.length);
+
+  return validClients.map(c => {
+    const num = getInvNum(c);
+
+    // Match line items by invoice number
+    const items = lineItems.filter(li => {
+      const ln = getInvNum(li);
+      return ln && ln.trim().toLowerCase() === num.trim().toLowerCase();
+    });
+    // Log whenever a match IS found
+    if(items.length > 0){
+      console.log('✅ MATCHED inv#', num, '→', items.length, 'line items:', JSON.stringify(items[0]));
+    }
+
+    // Calculate total from line items
+    const calcTotal = items.reduce((s,li) => s + getQty(li)*getPrice(li), 0);
+
+    // Fallback to Total column — try every possible key name
+    // Google Sheets normalizes "Total" → "total", but log all keys to debug
+    const allKeys = Object.keys(c);
+    if(num === getInvNum(clients[0])){
+      console.log('📋 Client row keys:', allKeys.join(', '));
+      console.log('📋 Client row values:', JSON.stringify(c));
+    }
+    // Try all likely column name variants
+    const rawTotal = c.total || c.total_amount || c.amount || c.invoice_total
+      || c.grand_total || c.net_amount || c.net || c.value
+      || allKeys.filter(k=>k.includes('total')||k.includes('amount')||k.includes('price')).map(k=>c[k]).find(v=>parseFloat(v)>0)
+      || '0';
+    // Strip currency symbols, commas, spaces before parsing
+    const sheetTotal = parseFloat(String(rawTotal).trim().replace(/[$ ,]/g,'')) || 0;
+    console.log('💰 Invoice',num,'rawTotal=',rawTotal,'parsed=',sheetTotal,'keys=',allKeys.join(','));
+    const total = calcTotal > 0 ? calcTotal : sheetTotal;
+
+    // Get status — your sheet uses "Status" col → normalizes to "status"
+    const rawStatus = (c.status||c.payment_status||'pending').toLowerCase().trim();
+    const status = ['paid','pending','overdue'].includes(rawStatus) ? rawStatus : 'pending';
+
+    return {
+      number: num,
+      name:   c.name||c.client_name||c.customer||'',
+      addr:   c.address||c.client_address||'',
+      date:   c.date||c.invoice_date||today(),
+      due:    c.due_date||c.due||'',
+      status, total, items,
+    };
+  });
+}
+
+/* ═══ STATS ═════════════════════════════════════════════════ */
+function renderStats(){
+  const cur='S$';
+  ge('s0').textContent = ALL.length;
+  ge('s1').textContent = cur+fmt(ALL.reduce((s,i)=>s+i.total,0));
+  const paid=ALL.filter(i=>i.status==='paid');
+  const pend=ALL.filter(i=>i.status==='pending');
+  const over=ALL.filter(i=>i.status==='overdue');
+  ge('s2').textContent=paid.length; ge('s2a').textContent=cur+fmt(paid.reduce((s,i)=>s+i.total,0));
+  ge('s3').textContent=pend.length; ge('s3a').textContent=cur+fmt(pend.reduce((s,i)=>s+i.total,0));
+  ge('s4').textContent=over.length; ge('s4a').textContent=cur+fmt(over.reduce((s,i)=>s+i.total,0));
+}
+
+/* ═══ FILTER / TABLE ════════════════════════════════════════ */
+function setFilter(f, btn){
+  activeFilter=f;
+  document.querySelectorAll('.pill').forEach(p=>p.className='pill');
+  btn.classList.add('pill','a-'+f);
+  applyFilters();
+}
+
+function applyFilters(){
+  const q=(ge('qSearch').value||'').toLowerCase();
+  SHOWN = ALL.filter(inv=>{
+    const mf = activeFilter==='all' || inv.status===activeFilter;
+    const mq = !q || inv.number.toLowerCase().includes(q) || inv.name.toLowerCase().includes(q) || inv.addr.toLowerCase().includes(q);
+    return mf && mq;
+  });
+  renderRows();
+}
+
+function renderRows(){
+  const cur='S$';
+  const tb=ge('tBody');
+  if(!SHOWN.length){
+    tb.innerHTML=`<tr><td colspan="7"><div class="state">
+      <div class="state-ico">🔍</div>
+      <div class="state-title">No Invoices Found</div>
+      <div class="state-msg">No invoices match the current filter or search term.</div>
+    </div></td></tr>`; return;
+  }
+  tb.innerHTML = SHOWN.map((inv,i)=>`
+    <tr style="animation:up .3s ease ${i*.04}s both" onclick="openInv('${esc(inv.number)}')">
+      <td><span class="inum">#${inv.number}</span></td>
+      <td><span class="cname">${inv.name||'—'}</span><span class="caddr">${shortAddr(inv.addr)}</span></td>
+      <td style="color:var(--muted);font-size:.81rem">${inv.date}</td>
+      <td style="text-align:center;color:var(--muted)">${inv.items.length}</td>
+      <td style="text-align:right"><span class="amtcell">${cur} ${fmt(inv.total)}</span></td>
+      <td>${mkBadge(inv.status)}</td>
+      <td><div class="acts" onclick="event.stopPropagation()">
+        <button class="btn btn-sm btn-white" onclick="openInv('${esc(inv.number)}')">View</button>
+        <button class="btn btn-sm btn-primary" onclick="quickPDF('${esc(inv.number)}')">PDF</button>
+      </div></td>
+    </tr>`).join('');
+}
+
+function mkBadge(s){
+  const m={paid:'b-paid',pending:'b-pending',overdue:'b-overdue'};
+  return `<span class="badge ${m[s]||'b-pending'}"><span class="bdot"></span>${cap(s)}</span>`;
+}
+
+/* ═══ INVOICE VIEW ══════════════════════════════════════════ */
+function openInv(num){
+  const inv=ALL.find(i=>i.number===num);
+  if(!inv) return;
+  curInv=inv;
+  const cur='S$';
+  ge('mLabel').textContent = `Invoice #${inv.number} · ${inv.name}`;
+
+  const hasItems = inv.items && inv.items.length;
+  const rows = hasItems
+    ? inv.items.map(li=>{
+        const q=getQty(li);
+        const p=getPrice(li);
+        const d=getDesc(li);
+        return `<tr>
+          <td>${d}</td>
+          <td class="c">${q}</td>
+          <td class="r">${cur} ${fmt(p)}</td>
+          <td class="r bold">${cur} ${fmt(q*p)}</td>
+        </tr>`;
+      }).join('')
+    : `<tr>
+        <td style="color:var(--muted);font-style:italic">Invoice total (no line item breakdown)</td>
+        <td class="c">—</td>
+        <td class="r">—</td>
+        <td class="r bold">${cur} ${fmt(inv.total)}</td>
+      </tr>`;
+
+  const bc = {paid:'b-paid',pending:'b-pending',overdue:'b-overdue'}[inv.status]||'b-pending';
+  const addrLines = (inv.addr||'').split(',').map(s=>s.trim()).filter(Boolean).join('<br>');
+  const bizLines  = CFG.addr.split(',').map(s=>s.trim()).filter(Boolean).join('<br>');
+
+  ge('invDoc').innerHTML = `
+    <!-- ─ HEADER: Logo + Business Name (left) | Invoice # (right) ─ -->
+    <div class="inv-hd">
+      <div class="inv-brand">
+        <div class="inv-logo">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"/><path d="M8 13h8v1H8zm0 3h5v1H8z"/></svg>
+        </div>
+        <div>
+          <div class="inv-biz-name">${CFG.name}</div>
+          <div class="inv-biz-addr">${bizLines}</div>
+        </div>
+      </div>
+      <div class="inv-numbox">
+        <div class="inv-num-lbl">Invoice</div>
+        <div class="inv-num">#${inv.number}</div>
+        <div class="inv-num-sub">
+          ${inv.date?`<div>Issued: ${inv.date}</div>`:''}
+          ${inv.due?`<div>Due: ${inv.due}</div>`:''}
+        </div>
+      </div>
+    </div>
+    <div class="inv-rule"></div>
+
+    <!-- ─ CLIENT ADDRESS ─ -->
+    <div class="inv-parties">
+      <div>
+        <div class="p-lbl">Billed To</div>
+        <div class="p-name">${inv.name||'—'}</div>
+        <div class="p-addr">${addrLines||'—'}</div>
+        <div class="p-status"><span class="badge ${bc}"><span class="bdot"></span>${cap(inv.status)}</span></div>
+      </div>
+      <div style="text-align:right">
+        <div class="p-lbl">From</div>
+        <div class="p-name">${CFG.name}</div>
+        <div class="p-addr" style="text-align:right">${bizLines}</div>
+      </div>
+    </div>
+
+    <!-- ─ LINE ITEMS ─ -->
+    <table class="inv-tbl">
+      <thead><tr>
+        <th>Description</th><th class="c">Qty</th><th class="r">Rate</th><th class="r">Amount</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+
+    <!-- ─ TOTALS ─ -->
+    <div class="totals-wrap">
+      <div class="totals-box">
+        <div class="tot-row"><span style="color:var(--muted)">Subtotal</span><span>${cur} ${fmt(inv.total)}</span></div>
+        <div class="tot-row"><span style="color:var(--muted)">Tax (0%)</span><span>${cur} 0.00</span></div>
+        <div class="tot-row"><span>Total Due</span><span class="grand">${cur} ${fmt(inv.total)}</span></div>
+      </div>
+    </div>
+
+    <!-- ─ FOOTER ─ -->
+    <div class="inv-foot">
+      <div class="inv-foot-note">Thank you for your business! Please make payment within 30 days.</div>
+      <span class="badge ${bc}"><span class="bdot"></span>${cap(inv.status)}</span>
+    </div>`;
+
+  ge('overlay').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+
+function overlayClick(e){ if(e.target===ge('overlay')) closeModal(); }
+function closeModal(){ ge('overlay').classList.remove('open'); document.body.style.overflow=''; }
+
+/* ═══ PDF ════════════════════════════════════════════════════ */
+function dlPDF(){ if(curInv) makePDF(curInv); }
+function quickPDF(num){ const inv=ALL.find(i=>i.number===num); if(inv) makePDF(inv); }
+
+function makePDF(inv){
+  const {jsPDF} = window.jspdf;
+  const doc = new jsPDF({orientation:'p', unit:'mm', format:'a4'});
+  const W=210, M=20;
+  const cur = 'S$';
+
+  // ── IMAGE PLACEHOLDERS ── replace these URLs when you have the images
+  const HEADER_IMG_URL = './header.png';  // e.g. 'https://yourdomain.com/header.png'
+  const FOOTER_IMG_URL = './footer.png';  // e.g. 'https://yourdomain.com/footer.png'
+  const HEADER_H = 28;   // header image height in mm — adjust to match your image
+  const FOOTER_H = 35;   // footer image height in mm — adjust to match your image
+  const CONTENT_TOP = HEADER_H + 4;       // content starts below header
+  const CONTENT_BTM = 297 - FOOTER_H - 4; // content ends above footer
+
+  // Helper: draw header+footer on a given page
+  function drawHeaderFooter(){
+    // Header image — full width, top of page
+    if(HEADER_IMG_URL !== 'HEADER_IMAGE_URL_HERE'){
+      doc.addImage(HEADER_IMG_URL, 'PNG', 0, 0, W, HEADER_H);
+    } else {
+      // Placeholder header band until real image is provided
+      doc.setFillColor(11,29,58);
+      doc.rect(0,0,W,HEADER_H,'F');
+      doc.setFillColor(59,130,196);
+      doc.rect(0,HEADER_H,W,2,'F');
+      // Logo
+      doc.setFillColor(28,68,128);
+      doc.roundedRect(M,6,22,16,2,2,'F');
+      doc.setFillColor(59,130,196);
+      doc.roundedRect(M+2,8,18,12,1.5,1.5,'F');
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(8);
+      doc.setTextColor(255,255,255);
+      doc.text('INV', M+11, 16, {align:'center'});
+      // Biz name
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(12);
+      doc.setTextColor(255,255,255);
+      doc.text(CFG.name, M+28, 14);
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(7);
+      doc.setTextColor(160,195,230);
+      doc.text(CFG.addr, M+28, 20);
+    }
+
+    // Footer image — full width, bottom of page
+    if(FOOTER_IMG_URL !== 'FOOTER_IMAGE_URL_HERE'){
+      doc.addImage(FOOTER_IMG_URL, 'PNG', 0, 297-FOOTER_H, W, FOOTER_H);
+    } else {
+      // Placeholder footer band
+      const fy = 297 - FOOTER_H;
+      doc.setFillColor(245,249,255);
+      doc.rect(0, fy, W, FOOTER_H, 'F');
+      doc.setDrawColor(210,225,245);
+      doc.setLineWidth(0.4);
+      doc.line(0, fy, W, fy);
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(7.5);
+      doc.setTextColor(130,150,180);
+      doc.text('Thank you for your business!', W/2, fy+8, {align:'center'});
+      doc.text(CFG.name+' · '+CFG.addr, W/2, fy+14, {align:'center'});
+    }
+  }
+
+  // Draw header/footer on first page
+  drawHeaderFooter();
+
+  // ── INVOICE META (top-right, below header) ──
+  const metaY = CONTENT_TOP + 4;
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(6.5);
+  doc.setTextColor(130,150,180);
+  doc.text('INVOICE', W-M, metaY, {align:'right'});
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(15);
+  doc.setTextColor(11,29,58);
+  doc.text('#'+inv.number, W-M, metaY+8, {align:'right'});
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(7.5);
+  doc.setTextColor(100,120,155);
+  if(inv.date) doc.text('Date: '+inv.date, W-M, metaY+14, {align:'right'});
+  if(inv.due)  doc.text('Due:  '+inv.due,  W-M, metaY+20, {align:'right'});
+
+  // ── BILLED TO / FROM ──
+  const partyY = CONTENT_TOP + 4;
+
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(6.5);
+  doc.setTextColor(59,130,196);
+  doc.text('BILLED TO', M, partyY);
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(10);
+  doc.setTextColor(11,29,58);
+  doc.text(inv.name||'—', M, partyY+7);
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(8);
+  doc.setTextColor(100,120,155);
+  const aLines = (inv.addr||'').split(',').map(s=>s.trim()).filter(Boolean);
+  aLines.forEach((l,i) => doc.text(l, M, partyY+14+i*5.5));
+
+  // Status badge
+  const sc = {paid:[10,122,75], pending:[184,106,0], overdue:[192,40,40]}[inv.status]||[184,106,0];
+  const badgeY = partyY + 14 + aLines.length * 5.5 + 3;
+  doc.setFillColor(...sc);
+  doc.roundedRect(M, badgeY, 22, 6, 1.5, 1.5, 'F');
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(6.5);
+  doc.setTextColor(255,255,255);
+  doc.text(cap(inv.status), M+11, badgeY+4.2, {align:'center'});
+
+  // ── LINE ITEMS TABLE ──
+  const tableY = badgeY + 12;
+  const tRows = (inv.items||[]).map(li => {
+    const q=getQty(li), p=getPrice(li);
+    return [getDesc(li), String(q), cur+' '+fmt(p), cur+' '+fmt(q*p)];
+  });
+  if(!tRows.length){
+    tRows.push(['Invoice total (no line item breakdown)', '—', '—', cur+' '+fmt(inv.total)]);
+  }
+
+  doc.autoTable({
+    startY: tableY,
+    head: [['Description','Qty','Rate','Amount']],
+    body: tRows,
+    margin: {left:M, right:M, top: CONTENT_TOP, bottom: FOOTER_H+6},
+    headStyles:{
+      fillColor:[11,29,58],
+      textColor:[175,205,240],
+      fontSize:7.5,
+      fontStyle:'bold',
+      cellPadding:4,
+    },
+    bodyStyles:{
+      fontSize:8.5,
+      textColor:[25,45,80],
+      cellPadding:4,
+    },
+    alternateRowStyles:{fillColor:[245,249,255]},
+    columnStyles:{
+      0:{cellWidth:'auto'},
+      1:{halign:'center', cellWidth:18},
+      2:{halign:'right',  cellWidth:36},
+      3:{halign:'right',  cellWidth:36, fontStyle:'bold'},
+    },
+    styles:{lineColor:[220,232,248], lineWidth:0.3},
+    // Draw header+footer on every new page
+    didDrawPage: function(){
+      drawHeaderFooter();
+    },
+  });
+
+  // ── TOTALS BOX — always after last row ──
+  const fy = doc.lastAutoTable.finalY;
+
+  // If totals box would overlap footer, add new page
+  if(fy + 42 > CONTENT_BTM){
+    doc.addPage();
+    drawHeaderFooter();
+  }
+
+  const finalY = doc.lastAutoTable.finalY;
+  const bx=W-M-75, bw=75, bh=36, by=finalY+8;
+
+  doc.setFillColor(245,249,255);
+  doc.roundedRect(bx, by, bw, bh, 3, 3, 'F');
+  doc.setDrawColor(210,225,245);
+  doc.setLineWidth(0.4);
+  doc.roundedRect(bx, by, bw, bh, 3, 3, 'S');
+
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(8);
+  doc.setTextColor(110,130,160);
+  doc.text('Subtotal', bx+8, by+10);
+  doc.text('Tax (0%)', bx+8, by+19);
+  doc.setTextColor(11,29,58);
+  doc.text(cur+' '+fmt(inv.total), bx+bw-6, by+10, {align:'right'});
+  doc.text(cur+' 0.00',            bx+bw-6, by+19, {align:'right'});
+
+  doc.setDrawColor(200,218,242);
+  doc.line(bx+5, by+23, bx+bw-5, by+23);
+
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(9);
+  doc.setTextColor(11,29,58);
+  doc.text('TOTAL', bx+8, by+31);
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(12);
+  doc.setTextColor(19,48,94);
+  doc.text(cur+' '+fmt(inv.total), bx+bw-6, by+31, {align:'right'});
+
+  doc.save('Invoice-'+inv.number+'.pdf');
+}
+
+function printInv(){ window.print(); }
+
+/* ═══ HELPERS ════════════════════════════════════════════════ */
+function ge(id){return document.getElementById(id);}
+
+// Debug helper — run testSheet() in console to see raw data
+function testSheet(){
+  fetch(`https://docs.google.com/spreadsheets/d/${CFG.id}/gviz/tq?tqx=out:csv&sheet=Clients`)
+    .then(r=>r.text())
+    .then(t=>{
+      console.log('RAW CSV first 3 lines:');
+      t.split('\n').slice(0,3).forEach((l,i)=>console.log(i+':',l));
+    });
+}
+function fmt(n){return Number(n).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function cap(s){return s?s[0].toUpperCase()+s.slice(1):'';}
+function today(){return new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});}
+function shortAddr(a){if(!a)return '';const p=a.split(',');return p.length>2?p[0].trim()+', '+p[p.length-1].trim():a;}
+function esc(s){return(s||'').replace(/'/g,"\\'");}
+function loadingRow(){
+  ge('tBody').innerHTML=`<tr><td colspan="7"><div class="state">
+    <div class="spin"></div>
+    <div class="state-title">Loading…</div>
+    <div class="state-msg">Fetching your invoices from Google Sheets.</div>
+  </div></td></tr>`;
+}
+function stateRow(ico,title,msg){
+  ge('tBody').innerHTML=`<tr><td colspan="7"><div class="state">
+    <div class="state-ico">${ico}</div>
+    <div class="state-title">${title}</div>
+    <div class="state-msg">${msg}</div>
+  </div></td></tr>`;
+}
+</script>
+</body>
+</html>
