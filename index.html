@@ -390,9 +390,9 @@ tbody tr:hover td{background:var(--ice);cursor:pointer;}
 <script>
 /* ═══ STATE ════════════════════════════════════════════════ */
 let CFG = {
-  id:   localStorage.getItem('im_id')   || '',
-  name: localStorage.getItem('im_name') || 'My Business',
-  addr: localStorage.getItem('im_addr') || '123 Business St, Chennai, India',
+  id:   localStorage.getItem('im_id')   || 'SHEET_ID_PLACEHOLDER',
+  name: localStorage.getItem('im_name') || 'Charan Logistics',
+  addr: localStorage.getItem('im_addr') || '',
   cur:  localStorage.getItem('im_cur')  || 'SGD ',
 };
 let ALL=[], SHOWN=[], activeFilter='all', curInv=null;
@@ -402,9 +402,9 @@ window.addEventListener('DOMContentLoaded', ()=>{
   const el = (id)=>document.getElementById(id);
 
   // Read fresh from localStorage each time page loads
-  const savedId   = localStorage.getItem('im_id')   || '';
-  const savedName = localStorage.getItem('im_name') || 'My Business';
-  const savedAddr = localStorage.getItem('im_addr') || '123 Business St, Chennai, India';
+  const savedId   = localStorage.getItem('im_id')   || 'SHEET_ID_PLACEHOLDER';
+  const savedName = localStorage.getItem('im_name') || 'Charan Logistics';
+  const savedAddr = localStorage.getItem('im_addr') || '';
   const savedCur  = localStorage.getItem('im_cur')  || '₹';
 
   // Sync CFG from storage
