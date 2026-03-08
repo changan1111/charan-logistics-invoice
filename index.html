@@ -419,7 +419,6 @@ window.addEventListener('DOMContentLoaded', ()=>{
   el('cfgAddr').value = savedAddr;
   el('cfgCur').value  = savedCur;
 
-  console.log('Loaded config — Sheet ID:', savedId || '(not set)');
 
   el('cfgToggle').addEventListener('click',()=>el('cfgPanel').classList.toggle('hidden'));
   updateSheetLink();
@@ -469,23 +468,12 @@ function saveConfig(){
   ge('cfgId').value = cleanId;
 
   // ── Console diagnostics ──
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  console.log('📋 Raw input   :', rawId);
-  console.log('🔑 Extracted ID:', cleanId);
-  console.log('📛 Biz Name    :', name);
-  console.log('📍 Address     :', addr);
-  console.log('🔗 Sheet URL   :', 'https://docs.google.com/spreadsheets/d/' + cleanId + '/edit');
-  console.log('📡 CSV Test URL:', 'https://docs.google.com/spreadsheets/d/' + cleanId + '/gviz/tq?tqx=out:csv&sheet=Clients');
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
   if(!cleanId){
-    console.error('❌ Sheet ID is empty! Paste the URL from your browser address bar while the sheet is open.');
     return;
   }
   if(cleanId.length < 20){
-    console.warn('⚠️ Sheet ID looks too short (' + cleanId.length + ' chars). Expected ~44 chars. Got: ' + cleanId);
   } else {
-    console.log('✅ Sheet ID looks valid (' + cleanId.length + ' chars)');
   }
 
   // Save each key separately
@@ -494,9 +482,7 @@ function saveConfig(){
     localStorage.setItem('im_name', name);
     localStorage.setItem('im_addr', addr);
     localStorage.setItem('im_cur',  cur);
-    console.log('💾 Saved to localStorage OK');
   } catch(e) {
-    console.warn('localStorage save failed:', e);
   }
 
   updateSheetLink();
@@ -514,19 +500,13 @@ function updateSheetLink(){
 /* ═══ DATA ══════════════════════════════════════════════════ */
 async function loadData(){
   if(!CFG.id){ stateRow('📋','Connect Your Sheet','Click ⚙ Settings, paste your Google Sheet URL or ID, and click Save & Load.'); return; }
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  console.log('🔄 Loading data for Sheet ID:', CFG.id);
   loadingRow();
   try{
     const [clients, lineItems] = await Promise.all([
       fetchSheet('Clients'), fetchSheet('LineItems')
     ]);
-    console.log('✅ Clients rows loaded   :', clients.length);
-    console.log('✅ LineItems rows loaded :', lineItems.length);
     if(clients.length > 0) console.log('   First row keys:', Object.keys(clients[0]).join(', '));
     ALL = build(clients, lineItems);
-    console.log('✅ Invoices built:', ALL.length);
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     renderStats();
     applyFilters();
   } catch(e){
@@ -577,7 +557,6 @@ async function fetchSheet(primaryName){
       if(txt.trim().startsWith('<!') || txt.trim().startsWith('<html')){ lastErr=`Sheet not published publicly.`; continue; }
       if(txt.trim()===''){ lastErr=`Tab "${name}" is empty.`; continue; }
       // success — log which name worked
-      console.log(`✅ Loaded "${primaryName}" using tab name: "${name}"`);
       return parseCSV(txt);
     } catch(e){ lastErr=e.message; continue; }
   }
@@ -588,14 +567,12 @@ function parseCSV(raw){
   const lines = splitCSVLines(raw.trim());
   if(!lines.length) return [];
   const hdr = parseCSVRow(lines[0]).map(h=>h.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,''));
-  console.log('CSV headers:', hdr.join(' | '));
   const rows = lines.slice(1).map(l=>{
     const v = parseCSVRow(l);
     const o = {};
     hdr.forEach((h,i)=>{ if(h) o[h] = (v[i]||'').trim(); });
     return o;
   }).filter(r=>Object.values(r).some(v=>v));
-  console.log('CSV first row:', JSON.stringify(rows[0]));
   return rows;
 }
 
@@ -674,7 +651,6 @@ function build(clients, lineItems){
     return true;
   });
 
-  console.log('Valid clients after filter:', validClients.length);
 
   return validClients.map(c => {
     const num = getInvNum(c);
@@ -686,7 +662,6 @@ function build(clients, lineItems){
     });
     // Log whenever a match IS found
     if(items.length > 0){
-      console.log('✅ MATCHED inv#', num, '→', items.length, 'line items:', JSON.stringify(items[0]));
     }
 
     // Calculate total from line items
@@ -696,8 +671,6 @@ function build(clients, lineItems){
     // Google Sheets normalizes "Total" → "total", but log all keys to debug
     const allKeys = Object.keys(c);
     if(num === getInvNum(clients[0])){
-      console.log('📋 Client row keys:', allKeys.join(', '));
-      console.log('📋 Client row values:', JSON.stringify(c));
     }
     // Try all likely column name variants
     const rawTotal = c.total || c.total_amount || c.amount || c.invoice_total
@@ -706,7 +679,6 @@ function build(clients, lineItems){
       || '0';
     // Strip currency symbols, commas, spaces before parsing
     const sheetTotal = parseFloat(String(rawTotal).trim().replace(/[$ ,]/g,'')) || 0;
-    console.log('💰 Invoice',num,'rawTotal=',rawTotal,'parsed=',sheetTotal,'keys=',allKeys.join(','));
     const total = calcTotal > 0 ? calcTotal : sheetTotal;
 
     // Get status — your sheet uses "Status" col → normalizes to "status"
@@ -963,7 +935,7 @@ function makePDF(inv){
   doc.setTextColor(11,29,58);
   doc.text('INVOICE  #'+inv.number, W-M, metaY+6, {align:'right'});
   doc.setFont('helvetica','normal');
-  doc.setFontSize(7.5);
+  doc.setFontSize(9);
   doc.setTextColor(11,29,58);
   if(inv.date) doc.text('Date: '+inv.date, W-M, metaY+14, {align:'right'});
   if(inv.due)  doc.text('Due:  '+inv.due,  W-M, metaY+20, {align:'right'});
@@ -980,29 +952,22 @@ function makePDF(inv){
   doc.setTextColor(11,29,58);
   doc.text(inv.name||'—', M, partyY+7);
   doc.setFont('helvetica','normal');
-  doc.setFontSize(8);
+  doc.setFontSize(9.5);
   doc.setTextColor(11,29,58);
   const aLines = (inv.addr||'').split(',').map(s=>s.trim()).filter(Boolean);
   aLines.forEach((l,i) => doc.text(l, M, partyY+14+i*5.5));
 
-  // Status badge
-  const sc = {paid:[10,122,75], pending:[184,106,0], overdue:[192,40,40]}[inv.status]||[184,106,0];
   const badgeY = partyY + 14 + aLines.length * 5.5 + 3;
-  doc.setFillColor(...sc);
-  doc.roundedRect(M, badgeY, 22, 6, 1.5, 1.5, 'F');
-  doc.setFont('helvetica','bold');
-  doc.setFontSize(6.5);
-  doc.setTextColor(255,255,255);
-  doc.text(cap(inv.status), M+11, badgeY+4.2, {align:'center'});
 
   // ── LINE ITEMS TABLE ──
   const tableY = badgeY + 12;
+  const capWords = s => s.replace(/\b\w/g, c=>c.toUpperCase());
   const tRows = (inv.items||[]).map(li => {
     const q=getQty(li), p=getPrice(li);
-    return [getDesc(li), String(q), cur+' '+fmt(p), cur+' '+fmt(q*p)];
+    return [capWords(getDesc(li)), String(q), cur+' '+fmt(p), cur+' '+fmt(q*p)];
   });
   if(!tRows.length){
-    tRows.push(['Invoice total (no line item breakdown)', '—', '—', cur+' '+fmt(inv.total)]);
+    tRows.push(['Invoice Total', '—', '—', cur+' '+fmt(inv.total)]);
   }
 
   doc.autoTable({
@@ -1018,8 +983,8 @@ function makePDF(inv){
       cellPadding:4,
     },
     bodyStyles:{
-      fontSize:8.5,
-      textColor:[25,45,80],
+      fontSize:9.5,
+      textColor:[11,29,58],
       cellPadding:4,
     },
     alternateRowStyles:{fillColor:[245,249,255]},
@@ -1088,7 +1053,6 @@ function testSheet(){
   fetch(`https://docs.google.com/spreadsheets/d/${CFG.id}/gviz/tq?tqx=out:csv&sheet=Clients`)
     .then(r=>r.text())
     .then(t=>{
-      console.log('RAW CSV first 3 lines:');
       t.split('\n').slice(0,3).forEach((l,i)=>console.log(i+':',l));
     });
 }
