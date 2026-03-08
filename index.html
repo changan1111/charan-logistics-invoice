@@ -103,7 +103,7 @@ body{font-family:'Outfit',sans-serif;background:var(--pale);color:var(--ink);min
 }
 .stat:hover::after{transform:scaleX(1);}
 .stat-lbl{font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.4rem;}
-.stat-val{font-family:'Outfit Garamond',serif;font-size:1.95rem;font-weight:700;color:var(--ink);line-height:1;}
+.stat-val{font-family:'Outfit',serif;font-size:1.75rem;font-weight:700;color:var(--ink);line-height:1;}
 .stat-val.c-paid{color:var(--paid-tx);}
 .stat-val.c-pend{color:var(--pend-tx);}
 .stat-val.c-over{color:var(--over-tx);}
@@ -111,7 +111,7 @@ body{font-family:'Outfit',sans-serif;background:var(--pale);color:var(--ink);min
 
 /* ── DASH HEAD ───────────────────────────────────────────── */
 .dhead{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;margin-bottom:1rem;}
-.dhead-title{font-family:'Outfit',serif;font-size:1.35rem;color:var(--ink);}
+.dhead-title{font-family:'Outfit',serif;font-size:1.15rem;color:var(--ink);}
 .dhead-right{display:flex;align-items:center;gap:.65rem;flex-wrap:wrap;}
 
 .search{position:relative;}
@@ -148,7 +148,7 @@ tbody tr:hover td{background:var(--ice);cursor:pointer;}
 .inum{font-weight:600;color:var(--sky);letter-spacing:.02em;}
 .cname{font-weight:500;color:var(--ink);display:block;}
 .caddr{font-size:.77rem;color:var(--muted);display:block;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.amtcell{font-family:'Outfit',serif;font-size:1.05rem;font-weight:600;}
+.amtcell{font-family:'Outfit',serif;font-size:0.93rem;font-weight:700;}
 
 .badge{display:inline-flex;align-items:center;gap:.3rem;padding:.2rem .62rem;border-radius:20px;font-size:.69rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;}
 .b-paid{background:var(--paid-bg);color:var(--paid-tx);}
@@ -206,12 +206,12 @@ tbody tr:hover td{background:var(--ice);cursor:pointer;}
   box-shadow:0 4px 14px rgba(19,48,94,.25);
 }
 .inv-logo svg{width:26px;height:26px;fill:white;}
-.inv-biz-name{font-family:'Outfit',serif;font-size:1.65rem;font-weight:600;color:var(--ink);line-height:1.1;margin-bottom:.25rem;}
+.inv-biz-name{font-family:'Outfit Garamond',serif;font-size:1.25rem;font-weight:600;color:var(--ink);line-height:1.1;margin-bottom:.25rem;}
 .inv-biz-addr{font-size:.8rem;color:var(--muted);line-height:1.75;}
 .inv-numbox{text-align:right;}
 .inv-num-lbl{font-size:.64rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:.3rem;}
 .inv-num{font-family:'Outfit',serif;font-size:2.1rem;font-weight:700;color:var(--ink);line-height:1;}
-.inv-num-sub{font-size:.78rem;color:var(--ink);margin-top:.35rem;line-height:1.7;}
+.inv-num-sub{font-size:.78rem;color:var(--muted);margin-top:.35rem;line-height:1.7;}
 
 /* Accent rule */
 .inv-rule{height:2px;background:linear-gradient(90deg,var(--navy),var(--sky) 60%,transparent 100%);border-radius:2px;margin-bottom:1.85rem;}
@@ -220,7 +220,7 @@ tbody tr:hover td{background:var(--ice);cursor:pointer;}
 .inv-parties{display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;margin-bottom:2rem;}
 .p-lbl{font-size:.64rem;text-transform:uppercase;letter-spacing:.1em;font-weight:600;color:var(--sky);margin-bottom:.5rem;}
 .p-name{font-weight:600;font-size:.98rem;color:var(--ink);margin-bottom:.2rem;}
-.p-addr{font-size:.83rem;color:var(--ink);line-height:1.8;}
+.p-addr{font-size:.83rem;color:var(--muted);line-height:1.8;}
 .p-status{margin-top:.65rem;}
 
 /* Line items */
@@ -241,7 +241,7 @@ tbody tr:hover td{background:var(--ice);cursor:pointer;}
 .totals-box{min-width:245px;}
 .tot-row{display:flex;justify-content:space-between;padding:.4rem 0;font-size:.85rem;border-bottom:1px solid var(--border);}
 .tot-row:last-child{border-bottom:none;margin-top:.35rem;padding-top:.6rem;font-size:1rem;font-weight:700;color:var(--ink);}
-.grand{font-family:'Outfit',serif;font-size:1.35rem;color:var(--navy);}
+.grand{font-family:'Outfit Garamond',serif;font-size:1.05rem;color:var(--navy);}
 
 /* Footer */
 .inv-foot{background:var(--pale);border-radius:10px;padding:.9rem 1.25rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;}
@@ -265,6 +265,112 @@ tbody tr:hover td{background:var(--ice);cursor:pointer;}
   .nav{padding:0 1rem;}
   .stats{grid-template-columns:repeat(2,1fr);}
 }
+
+  /* ── MOBILE RESPONSIVE ───────────────────────────────────── */
+@media(max-width:768px){
+
+  /* NAV */
+  .nav{ padding:0 1rem; height:54px; }
+  .nav-name{ font-size:1rem; }
+  .btn-ghost{ padding:.3rem .55rem; font-size:.72rem; }
+  .nav-right{ gap:.4rem; }
+
+  /* PAGE */
+  .page{ padding:1rem .75rem 3rem; }
+
+  /* STATS — 2 columns */
+  .stats{
+    grid-template-columns: repeat(2,1fr) !important;
+    gap:.65rem;
+  }
+  .stat{ padding:.9rem 1rem; }
+  .stat-val{ font-size:1.6rem; }
+
+  /* DASH HEADER */
+  .dhead{
+    flex-direction:column;
+    align-items:stretch;
+    gap:.65rem;
+  }
+  .dhead-right{
+    flex-direction:column;
+    align-items:stretch;
+    gap:.5rem;
+  }
+  .search{ width:100%; }
+  .search input{
+    width:100% !important;
+  }
+  .pills{ flex-wrap:wrap; gap:.35rem; }
+  .pill{ font-size:.72rem; padding:.25rem .65rem; }
+
+  /* TABLE — hide less important cols, allow scroll */
+  .tcard{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  table{ min-width:580px; }
+
+  /* Hide Date, Items, Actions columns on mobile */
+  /*thead th:nth-child(3),
+  thead th:nth-child(4),
+  thead th:nth-child(7),
+  tbody td:nth-child(3),
+  tbody td:nth-child(4),
+  tbody td:nth-child(7){ display:none; }*/
+
+    thead th:nth-child(3),
+  tbody td:nth-child(3){ min-width:85px; white-space:nowrap; }
+  thead th:nth-child(4),
+  tbody td:nth-child(4){ min-width:100px; white-space:nowrap; text-align:right; }
+  .amtcell{ white-space:nowrap; }
+
+  th{ padding:.65rem .75rem; font-size:.62rem; }
+  tbody td{ padding:.75rem .75rem; font-size:.82rem; }
+  .caddr{ max-width:120px; }
+  .amtcell{ font-size:.95rem; }
+
+  /* MODAL — full screen */
+  .overlay{ padding:0; align-items:flex-end; }
+  .modal{
+    border-radius:16px 16px 0 0;
+    max-height:95vh;
+    width:100%;
+  }
+  .modal-bar{ padding:.75rem 1rem; }
+  .modal-bar-lbl{ font-size:.75rem; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .modal-bar-acts{ gap:.35rem; }
+
+  /* INVOICE DOC */
+  #invDoc{ padding:1.25rem 1rem 2rem; }
+  .inv-hd{
+    grid-template-columns:1fr;
+    gap:.75rem;
+  }
+  .inv-numbox{ text-align:left; }
+  .inv-num{ font-size:1.6rem; }
+  .inv-parties{
+    grid-template-columns:1fr;
+    gap:1rem;
+  }
+  .inv-parties > div:last-child{ text-align:left !important; }
+  .inv-parties > div:last-child .p-addr{ text-align:left !important; }
+  .inv-tbl thead th,
+  .inv-tbl tbody td{ padding:.55rem .65rem; font-size:.78rem; }
+  .totals-wrap{ justify-content:stretch; }
+  .totals-box{ min-width:100%; }
+  .tot-row{ font-size:.82rem; }
+  .grand{ font-size:1.2rem; }
+  .inv-foot{ flex-direction:column; gap:.5rem; padding:.75rem 1rem; }
+
+  /* CFG PANEL */
+  .cfg-grid{ grid-template-columns:1fr; }
+  .cfg-inner{ padding:1rem 1rem 1.25rem; }
+}
+
+@media(max-width:400px){
+  .stats{ grid-template-columns:1fr 1fr !important; }
+  .stat-val{ font-size:1.4rem; }
+  .nav-name{ font-size:.9rem; }
+}
+
 </style>
 </head>
 <body>
@@ -280,7 +386,7 @@ tbody tr:hover td{background:var(--ice);cursor:pointer;}
   <div class="nav-right">
     <button class="btn btn-ghost btn-sm" id="cfgToggle">⚙ Settings</button>
     <button class="btn btn-ghost btn-sm" onclick="loadData()">↻ Refresh</button>
-    <a id="sheetLink" href="https://docs.google.com/spreadsheets" target="_blank" class="btn btn-primary btn-sm">Open Sheet ↗</a>
+    <a id="sheetLink" href="https://docs.google.com/spreadsheets" target="_blank" class="btn btn-primary btn-sm" style="display:none">Open Sheet ↗</a>
   </div>
 </nav>
 
@@ -292,8 +398,8 @@ tbody tr:hover td{background:var(--ice);cursor:pointer;}
       <p>Paste your full Sheet URL or ID. Tab names must be <b style="color:white">Clients</b> and <b style="color:white">LineItems</b>. Sheet must be published (File → Share → Publish to web → CSV).</p>
     </div>
     <div class="cfg-grid">
-      <div class="cfg-field">
-        <label>Google Sheet ID</label>
+<div class="cfg-field" style="display:none">
+  <label>Google Sheet ID</label>
         <input id="cfgId" placeholder="Paste full Sheet URL or bare ID…"/>
       </div>
       <div class="cfg-field">
@@ -302,7 +408,7 @@ tbody tr:hover td{background:var(--ice);cursor:pointer;}
       </div>
       <div class="cfg-field">
         <label>Business Address</label>
-        <input id="cfgAddr" value="101 Kitchener Road #03-14 Jalan Besar Plaza Singapore 208511" placeholder="101 Kitchener Road #03-14 Jalan Besar Plaza Singapore 208511"/>
+        <input id="cfgAddr" value="123 Business St, Chennai, India" placeholder="123 Main St, City"/>
       </div>
       <div class="cfg-field" style="max-width:100px">
         <label>Currency</label>
@@ -355,7 +461,6 @@ tbody tr:hover td{background:var(--ice);cursor:pointer;}
           <th>Invoice #</th>
           <th>Client</th>
           <th>Date</th>
-          <th class="c">Items</th>
           <th class="r">Amount</th>
           <th>Status</th>
           <th class="c">Actions</th>
@@ -390,9 +495,9 @@ tbody tr:hover td{background:var(--ice);cursor:pointer;}
 <script>
 /* ═══ STATE ════════════════════════════════════════════════ */
 let CFG = {
-  id:   localStorage.getItem('im_id')   || '',
+  id:   'SHEET_ID_PLACEHOLDER',
   name: localStorage.getItem('im_name') || 'Charan Logistics',
-  addr: localStorage.getItem('im_addr') || '101 Kitchener Road #03-14 Jalan Besar Plaza Singapore 208511',
+  addr: localStorage.getItem('im_addr') || '',
   cur:  localStorage.getItem('im_cur')  || 'SGD ',
 };
 let ALL=[], SHOWN=[], activeFilter='all', curInv=null;
@@ -402,9 +507,9 @@ window.addEventListener('DOMContentLoaded', ()=>{
   const el = (id)=>document.getElementById(id);
 
   // Read fresh from localStorage each time page loads
-  const savedId   = localStorage.getItem('im_id')   || '';
+  const savedId   = 'SHEET_ID_PLACEHOLDER';
   const savedName = localStorage.getItem('im_name') || 'Charan Logistics';
-  const savedAddr = localStorage.getItem('im_addr') || '101 Kitchener Road #03-14 Jalan Besar Plaza Singapore 208511';
+  const savedAddr = localStorage.getItem('im_addr') || '';
   const savedCur  = localStorage.getItem('im_cur')  || '₹';
 
   // Sync CFG from storage
@@ -659,8 +764,6 @@ function getInvNum(r){
 function build(clients, lineItems){
   const liNums = lineItems.map(li=>getInvNum(li)).filter(Boolean).join(', ') || '(none)';
   const clNums = clients.slice(0,5).map(c=>getInvNum(c)).join(', ');
-//  alert('🔍 DEBUG\n\nLineItem invoice#s:\n' + liNums + '\n\nClient invoice#s (first 5):\n' + clNums);
-
   // Filter out rows where invoice number is empty or looks like a junk value
   // (addresses, status values, amounts accidentally parsed as invoice rows)
   const validClients = clients.filter(c => {
@@ -770,7 +873,6 @@ function renderRows(){
       <td><span class="inum">#${inv.number}</span></td>
       <td><span class="cname">${inv.name||'—'}</span><span class="caddr">${shortAddr(inv.addr)}</span></td>
       <td style="color:var(--muted);font-size:.81rem">${inv.date}</td>
-      <td style="text-align:center;color:var(--muted)">${inv.items.length}</td>
       <td style="text-align:right"><span class="amtcell">${cur} ${fmt(inv.total)}</span></td>
       <td>${mkBadge(inv.status)}</td>
       <td><div class="acts" onclick="event.stopPropagation()">
@@ -866,8 +968,8 @@ function openInv(num){
     <!-- ─ TOTALS ─ -->
     <div class="totals-wrap">
       <div class="totals-box">
-        <div class="tot-row"><span>Subtotal</span><span>${cur} ${fmt(inv.total)}</span></div>
-        <div class="tot-row"><span>Tax (0%)</span><span>${cur} 0.00</span></div>
+        <div class="tot-row"><span style="color:var(--muted)">Subtotal</span><span>${cur} ${fmt(inv.total)}</span></div>
+        <div class="tot-row"><span style="color:var(--muted)">Tax (0%)</span><span>${cur} 0.00</span></div>
         <div class="tot-row"><span>Total Due</span><span class="grand">${cur} ${fmt(inv.total)}</span></div>
       </div>
     </div>
@@ -958,15 +1060,19 @@ function makePDF(inv){
 
   // ── INVOICE META (top-right, below header) ──
   const metaY = CONTENT_TOP + 4;
-  doc.setFont('helvetica','bold');
-  doc.setFontSize(14);
-  doc.setTextColor(11,29,58);
-  doc.text('INVOICE  #'+inv.number, W-M, metaY+6, {align:'right'});
   doc.setFont('helvetica','normal');
-  doc.setFontSize(9);
+  doc.setFontSize(6.5);
+  doc.setTextColor(130,150,180);
+  doc.text('INVOICE', W-M, metaY, {align:'right'});
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(15);
   doc.setTextColor(11,29,58);
-  if(inv.date) doc.text('Date: '+inv.date, W-M, metaY+15, {align:'right'});
-  if(inv.due)  doc.text('Due:  '+inv.due,  W-M, metaY+22, {align:'right'});
+  doc.text('#'+inv.number, W-M, metaY+8, {align:'right'});
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(7.5);
+  doc.setTextColor(100,120,155);
+  if(inv.date) doc.text('Date: '+inv.date, W-M, metaY+14, {align:'right'});
+  if(inv.due)  doc.text('Due:  '+inv.due,  W-M, metaY+20, {align:'right'});
 
   // ── BILLED TO / FROM ──
   const partyY = CONTENT_TOP + 4;
@@ -980,27 +1086,34 @@ function makePDF(inv){
   doc.setTextColor(11,29,58);
   doc.text(inv.name||'—', M, partyY+7);
   doc.setFont('helvetica','normal');
-  doc.setFontSize(9.5);
-  doc.setTextColor(11,29,58);
+  doc.setFontSize(8);
+  doc.setTextColor(100,120,155);
   const aLines = (inv.addr||'').split(',').map(s=>s.trim()).filter(Boolean);
   aLines.forEach((l,i) => doc.text(l, M, partyY+14+i*5.5));
 
+  // Status badge
+  /*const sc = {paid:[10,122,75], pending:[184,106,0], overdue:[192,40,40]}[inv.status]||[184,106,0];
   const badgeY = partyY + 14 + aLines.length * 5.5 + 3;
+  doc.setFillColor(...sc);
+  doc.roundedRect(M, badgeY, 22, 6, 1.5, 1.5, 'F');
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(6.5);
+  doc.setTextColor(255,255,255);
+  doc.text(cap(inv.status), M+11, badgeY+4.2, {align:'center'});*/
 
   // ── LINE ITEMS TABLE ──
   const tableY = badgeY + 12;
-  const capWords = s => s.replace(/\b\w/g, c=>c.toUpperCase());
   const tRows = (inv.items||[]).map(li => {
     const q=getQty(li), p=getPrice(li);
-    return [capWords(getDesc(li)), String(q), cur+' '+fmt(p), cur+' '+fmt(q*p)];
+    return [getDesc(li), String(q), cur+' '+fmt(p), cur+' '+fmt(q*p)];
   });
   if(!tRows.length){
-    tRows.push(['Invoice Total', '—', '—', cur+' '+fmt(inv.total)]);
+    tRows.push(['Invoice total (no line item breakdown)', '—', '—', cur+' '+fmt(inv.total)]);
   }
 
   doc.autoTable({
     startY: tableY,
-    head: [['DESCRIPTION','QTY','RATE','AMOUNT']],
+    head: [['Description','Qty','Rate','Amount']],
     body: tRows,
     margin: {left:M, right:M, top: CONTENT_TOP, bottom: FOOTER_H+6},
     headStyles:{
@@ -1011,8 +1124,8 @@ function makePDF(inv){
       cellPadding:4,
     },
     bodyStyles:{
-      fontSize:9.5,
-      textColor:[11,29,58],
+      fontSize:8.5,
+      textColor:[25,45,80],
       cellPadding:4,
     },
     alternateRowStyles:{fillColor:[245,249,255]},
@@ -1049,7 +1162,7 @@ function makePDF(inv){
 
   doc.setFont('helvetica','normal');
   doc.setFontSize(8);
-  doc.setTextColor(11,29,58);
+  doc.setTextColor(110,130,160);
   doc.text('Subtotal', bx+8, by+10);
   doc.text('Tax (0%)', bx+8, by+19);
   doc.setTextColor(11,29,58);
