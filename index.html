@@ -211,7 +211,7 @@ tbody tr:hover td{background:var(--ice);cursor:pointer;}
 .inv-numbox{text-align:right;}
 .inv-num-lbl{font-size:.64rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:.3rem;}
 .inv-num{font-family:'Outfit',serif;font-size:2.1rem;font-weight:700;color:var(--ink);line-height:1;}
-.inv-num-sub{font-size:.78rem;color:var(--muted);margin-top:.35rem;line-height:1.7;}
+.inv-num-sub{font-size:.78rem;color:var(--ink);margin-top:.35rem;line-height:1.7;}
 
 /* Accent rule */
 .inv-rule{height:2px;background:linear-gradient(90deg,var(--navy),var(--sky) 60%,transparent 100%);border-radius:2px;margin-bottom:1.85rem;}
@@ -220,7 +220,7 @@ tbody tr:hover td{background:var(--ice);cursor:pointer;}
 .inv-parties{display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;margin-bottom:2rem;}
 .p-lbl{font-size:.64rem;text-transform:uppercase;letter-spacing:.1em;font-weight:600;color:var(--sky);margin-bottom:.5rem;}
 .p-name{font-weight:600;font-size:.98rem;color:var(--ink);margin-bottom:.2rem;}
-.p-addr{font-size:.83rem;color:var(--muted);line-height:1.8;}
+.p-addr{font-size:.83rem;color:var(--ink);line-height:1.8;}
 .p-status{margin-top:.65rem;}
 
 /* Line items */
@@ -968,8 +968,8 @@ function openInv(num){
     <!-- ─ TOTALS ─ -->
     <div class="totals-wrap">
       <div class="totals-box">
-        <div class="tot-row"><span style="color:var(--muted)">Subtotal</span><span>${cur} ${fmt(inv.total)}</span></div>
-        <div class="tot-row"><span style="color:var(--muted)">Tax (0%)</span><span>${cur} 0.00</span></div>
+        <div class="tot-row"><span>Subtotal</span><span>${cur} ${fmt(inv.total)}</span></div>
+        <div class="tot-row"><span>Tax (0%)</span><span>${cur} 0.00</span></div>
         <div class="tot-row"><span>Total Due</span><span class="grand">${cur} ${fmt(inv.total)}</span></div>
       </div>
     </div>
@@ -1059,12 +1059,11 @@ function makePDF(inv){
   drawHeaderFooter();
 
   // ── INVOICE META (top-right, below header) ──
-  const metaY = CONTENT_TOP + 4;
-  doc.setFont('helvetica','normal');
-  doc.setFontSize(6.5);
-  doc.setTextColor(130,150,180);
-  doc.text('INVOICE', W-M, metaY, {align:'right'});
-  doc.setFont('helvetica','bold');
+const metaY = CONTENT_TOP + 4;
+doc.setFont('helvetica','bold');
+doc.setFontSize(15);
+doc.setTextColor(11,29,58);
+doc.text('INVOICE  #'+inv.number, W-M, metaY+6, {align:'right'});  doc.setFont('helvetica','bold');
   doc.setFontSize(15);
   doc.setTextColor(11,29,58);
   doc.text('#'+inv.number, W-M, metaY+8, {align:'right'});
@@ -1165,7 +1164,7 @@ function makePDF(inv){
 
   doc.setFont('helvetica','normal');
   doc.setFontSize(8);
-  doc.setTextColor(110,130,160);
+doc.setTextColor(11,29,58);
   doc.text('Subtotal', bx+8, by+10);
   doc.text('Tax (0%)', bx+8, by+19);
   doc.setTextColor(11,29,58);
