@@ -1092,14 +1092,14 @@ function makePDF(inv){
   aLines.forEach((l,i) => doc.text(l, M, partyY+14+i*5.5));
 
   // Status badge
-  const sc = {paid:[10,122,75], pending:[184,106,0], overdue:[192,40,40]}[inv.status]||[184,106,0];
+  /*const sc = {paid:[10,122,75], pending:[184,106,0], overdue:[192,40,40]}[inv.status]||[184,106,0];
   const badgeY = partyY + 14 + aLines.length * 5.5 + 3;
   doc.setFillColor(...sc);
   doc.roundedRect(M, badgeY, 22, 6, 1.5, 1.5, 'F');
   doc.setFont('helvetica','bold');
   doc.setFontSize(6.5);
   doc.setTextColor(255,255,255);
-  doc.text(cap(inv.status), M+11, badgeY+4.2, {align:'center'});
+  doc.text(cap(inv.status), M+11, badgeY+4.2, {align:'center'});*/
 
   // ── LINE ITEMS TABLE ──
   const tableY = badgeY + 12;
