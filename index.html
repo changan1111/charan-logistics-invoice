@@ -280,7 +280,7 @@ tbody tr:hover td{background:var(--ice);cursor:pointer;}
   <div class="nav-right">
     <button class="btn btn-ghost btn-sm" id="cfgToggle">⚙ Settings</button>
     <button class="btn btn-ghost btn-sm" onclick="loadData()">↻ Refresh</button>
-    <a id="sheetLink" href="https://docs.google.com/spreadsheets" target="_blank" class="btn btn-primary btn-sm">Open Sheet ↗</a>
+    <a id="sheetLink" href="https://docs.google.com/spreadsheets" target="_blank" class="btn btn-primary btn-sm" style="display:none">Open Sheet ↗</a>
   </div>
 </nav>
 
@@ -292,8 +292,8 @@ tbody tr:hover td{background:var(--ice);cursor:pointer;}
       <p>Paste your full Sheet URL or ID. Tab names must be <b style="color:white">Clients</b> and <b style="color:white">LineItems</b>. Sheet must be published (File → Share → Publish to web → CSV).</p>
     </div>
     <div class="cfg-grid">
-      <div class="cfg-field">
-        <label>Google Sheet ID</label>
+<div class="cfg-field" style="display:none">
+  <label>Google Sheet ID</label>
         <input id="cfgId" placeholder="Paste full Sheet URL or bare ID…"/>
       </div>
       <div class="cfg-field">
