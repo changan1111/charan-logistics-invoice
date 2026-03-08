@@ -659,7 +659,7 @@ function getInvNum(r){
 function build(clients, lineItems){
   const liNums = lineItems.map(li=>getInvNum(li)).filter(Boolean).join(', ') || '(none)';
   const clNums = clients.slice(0,5).map(c=>getInvNum(c)).join(', ');
-  alert('🔍 DEBUG\n\nLineItem invoice#s:\n' + liNums + '\n\nClient invoice#s (first 5):\n' + clNums);
+//  alert('🔍 DEBUG\n\nLineItem invoice#s:\n' + liNums + '\n\nClient invoice#s (first 5):\n' + clNums);
 
   // Filter out rows where invoice number is empty or looks like a junk value
   // (addresses, status values, amounts accidentally parsed as invoice rows)
