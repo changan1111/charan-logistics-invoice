@@ -867,7 +867,6 @@ function renderRows(){
       <td><span class="inum">#${inv.number}</span></td>
       <td><span class="cname">${inv.name||'—'}</span><span class="caddr">${shortAddr(inv.addr)}</span></td>
       <td style="color:var(--muted);font-size:.81rem">${inv.date}</td>
-      <td style="text-align:center;color:var(--muted)">${inv.items.length}</td>
       <td style="text-align:right"><span class="amtcell">${cur} ${fmt(inv.total)}</span></td>
       <td>${mkBadge(inv.status)}</td>
       <td><div class="acts" onclick="event.stopPropagation()">
