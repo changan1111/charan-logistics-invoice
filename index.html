@@ -1141,61 +1141,87 @@ function makePDF(inv){
 
   // left column (billed to)
   doc.setFont('helvetica','bold');
-  doc.setFontSize(14);
+  doc.setFontSize(12); // slightly smaller label
   doc.setTextColor(59,130,196);
   doc.text('BILLED TO', M, partyY);
   doc.setFont('helvetica','bold');
-  doc.setFontSize(14);
+  doc.setFontSize(12);
   doc.setTextColor(11,29,58);
-  doc.text(inv.name||'—', M, partyY+8);
+  doc.text(inv.name||'—', M, partyY+6);
   doc.setFont('helvetica','normal');
-  doc.setFontSize(14);
+  doc.setFontSize(12);
   doc.setTextColor(11,29,58);
   const aLines = (inv.addr||'').split(/,|\n/).map(s=>s.trim()).filter(Boolean);
-  aLines.forEach((l,i) => doc.text(l, M, partyY+16+i*6));
+  aLines.forEach((l,i) => doc.text(l, M, partyY+12+i*5));
 
 
 
   // ── LINE ITEMS TABLE ──
   const tableY = partyY + 14 + aLines.length * 5.5 + 3;
-  const tRows = (inv.items||[]).map(li => {
+  const allRows = (inv.items||[]).map(li => {
     const q=getQty(li), p=getPrice(li);
     return [getDesc(li).toUpperCase(), String(q), cur+' '+fmt(p), cur+' '+fmt(q*p)];
   });
-  if(!tRows.length){
-    tRows.push(['Invoice total (no line item breakdown)', '—', '—', cur+' '+fmt(inv.total)]);
+  if(!allRows.length){
+    allRows.push(['Invoice total (no line item breakdown)', '—', '—', cur+' '+fmt(inv.total)]);
   }
 
-  doc.autoTable({
-    startY: tableY,
-    head: [['Description','Qty','Rate','Amount']],
-    body: tRows,
-    margin: {left:M, right:M, top: CONTENT_TOP, bottom: FOOTER_H+6},
-    headStyles:{
-      fillColor:[11,29,58],
-      textColor:[175,205,240],
-      fontSize:7.5,
-      fontStyle:'bold',
-      cellPadding:4,
-    },
-    bodyStyles:{
-      fontSize:8.5,
-      textColor:[25,45,80],
-      cellPadding:4,
-    },
-    alternateRowStyles:{fillColor:[245,249,255]},
-    columnStyles:{
-      0:{cellWidth:'auto'},
-      1:{halign:'center', cellWidth:18},
-      2:{halign:'right',  cellWidth:36},
-      3:{halign:'right',  cellWidth:36, fontStyle:'bold'},
-    },
-    styles:{lineColor:[220,232,248], lineWidth:0.3},
-    // Draw header+footer on every new page
-    didDrawPage: function(){
+  // paginate rows: 100 per page
+  const rowsPerPage = 100;
+  const pages = [];
+  for(let i = 0; i < allRows.length; i += rowsPerPage){
+    pages.push(allRows.slice(i, i + rowsPerPage));
+  }
+
+  pages.forEach((pageRows, pi) => {
+    const startY = pi === 0 ? tableY : CONTENT_TOP; // top area on subsequent pages
+    doc.autoTable({
+      startY,
+      head: [['Description','Qty','Rate','Amount']],
+      body: pageRows,
+      margin: {left:M, right:M, top: CONTENT_TOP, bottom: FOOTER_H+6},
+      headStyles:{
+        fillColor:[11,29,58],
+        textColor:[175,205,240],
+        fontSize:8.5, // match body size
+        fontStyle:'bold',
+        cellPadding:4,
+      },
+      bodyStyles:{
+        fontSize:8.5,
+        textColor:[25,45,80],
+        cellPadding:4,
+      },
+      alternateRowStyles:{fillColor:[245,249,255]},
+      columnStyles:{
+        0:{cellWidth:'auto'},
+        1:{halign:'center', cellWidth:18},
+        2:{halign:'right',  cellWidth:36},
+        3:{halign:'right',  cellWidth:36, fontStyle:'bold'},
+      },
+      styles:{lineColor:[220,232,248], lineWidth:0.3},
+      didDrawPage: function(){
+        drawHeaderFooter();
+      },
+      // avoid splitting rows across pages
+      pageBreak: 'auto',
+    });
+
+    if(pi < pages.length - 1){
+      doc.addPage();
       drawHeaderFooter();
-    },
+    }
   });
+
+  // add page numbers
+  const pageCount = doc.internal.getNumberOfPages();
+  for(let p = 1; p <= pageCount; p++){
+    doc.setPage(p);
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(8);
+    doc.setTextColor(130,150,180);
+    doc.text(`Page ${p} of ${pageCount}`, W/2, 297 - FOOTER_H/2, {align:'center'});
+  }
 
   // ── TOTALS BOX — always after last row ──
   const fy = doc.lastAutoTable.finalY;
