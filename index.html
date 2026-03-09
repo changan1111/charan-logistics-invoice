@@ -1118,11 +1118,12 @@ function makePDF(inv){
 
   // label
   doc.setFont('helvetica','bold');
-  doc.setFontSize(12);
+  doc.setFontSize(15);
   doc.setTextColor(130,150,180);
   // place label just to the left of number with a small gap
-  doc.text('INVOICE', W-M - numW - 5, metaY);
-
+    const labelW = doc.getTextWidth('INVOICE ');
+  doc.text('INVOICE', W-M - numW - labelW, metaY);
+  
   // number
   doc.setFont('helvetica','bold');
   doc.setFontSize(15);
