@@ -1117,8 +1117,8 @@ function makePDF(inv){
   const numW = doc.getTextWidth(numStr);
 
   // label
-  doc.setFont('helvetica','normal');
-  doc.setFontSize(6.5);
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(12);
   doc.setTextColor(130,150,180);
   // place label just to the left of number with a small gap
   doc.text('INVOICE', W-M - numW - 2, metaY);
@@ -1220,7 +1220,7 @@ function makePDF(inv){
     doc.setFont('helvetica','normal');
     doc.setFontSize(8);
     doc.setTextColor(130,150,180);
-    doc.text(`Page ${p} of ${pageCount}`, W/2, 297 - FOOTER_H/2, {align:'center'});
+    doc.text(`Page ${p} of ${pageCount}`, W/2, 297 - 10, {align:'center'});
   }
 
   // ── TOTALS BOX — always after last row ──
