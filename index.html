@@ -1101,19 +1101,6 @@ function makePDF(inv){
   const CONTENT_TOP = HEADER_H + 4;
   const CONTENT_BTM = 297 - FOOTER_H - 4;
 
-    // ── FOOTER DETAILS — edit these to update footer text ──────
- /* const FOOTER = {
-    bankName:    'OCBC Bank Ltd.',
-    bankAddr:    '65 Chulia Street, OCBC Singapore Centre, Singapore 049513',
-    companyName: 'Charan Logistics Ptd Ltd.',
-    accountNo:   '604233585001',
-    payNowUEN:   '202502540D',
-    phone:       '+65 91858511',
-    email:       'venkat@charanlogistics.com',
-    address:     '101 Kitchener Road #03-14 Jalan Besar Plaza, Singapore 208511',
-    tagline:     'We Provide 24x7 Logistics & Transportation Services',
-  };*/
-  
   function drawHeaderFooter(){
     if(HEADER_IMG_URL !== 'HEADER_IMAGE_URL_HERE'){
       doc.addImage(HEADER_IMG_URL, 'PNG', 0, 0, W, HEADER_H,'',NONE);
