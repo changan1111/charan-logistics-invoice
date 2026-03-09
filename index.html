@@ -209,9 +209,9 @@ tbody tr:hover td{background:var(--ice);cursor:pointer;}
 .inv-biz-name{font-family:'Outfit Garamond',serif;font-size:1.25rem;font-weight:600;color:var(--ink);line-height:1.1;margin-bottom:.25rem;}
 .inv-biz-addr{font-size:.8rem;color:var(--muted);line-height:1.75;}
 .inv-numbox{text-align:right;}
-.inv-num-lbl{font-size:.64rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:.3rem;}
-.inv-num{font-family:'Outfit',serif;font-size:2.1rem;font-weight:700;color:var(--ink);line-height:1;}
-.inv-num-sub{font-size:.78rem;color:var(--muted);margin-top:.35rem;line-height:1.7;}
+.inv-num-lbl{font-size:.64rem;text-transform:uppercase;letter-spacing:.12em;color:var(--ink);margin-bottom:.3rem;display:inline-block;margin-right:.5rem;}
+.inv-num{font-family:'Outfit',serif;font-size:2.1rem;font-weight:700;color:var(--ink);line-height:1;display:inline;}
+.inv-num-sub{font-size:.78rem;color:var(--ink);margin-top:.35rem;line-height:1.7;}
 
 /* Accent rule */
 .inv-rule{height:2px;background:linear-gradient(90deg,var(--navy),var(--sky) 60%,transparent 100%);border-radius:2px;margin-bottom:1.85rem;}
@@ -220,7 +220,7 @@ tbody tr:hover td{background:var(--ice);cursor:pointer;}
 .inv-parties{display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;margin-bottom:2rem;}
 .p-lbl{font-size:.64rem;text-transform:uppercase;letter-spacing:.1em;font-weight:600;color:var(--sky);margin-bottom:.5rem;}
 .p-name{font-weight:600;font-size:.98rem;color:var(--ink);margin-bottom:.2rem;}
-.p-addr{font-size:.83rem;color:var(--muted);line-height:1.8;}
+.p-addr{font-size:.83rem;color:var(--ink);line-height:1.8;}
 .p-status{margin-top:.65rem;}
 
 /* Line items */
@@ -229,7 +229,8 @@ tbody tr:hover td{background:var(--ice);cursor:pointer;}
 .inv-tbl thead th{padding:.65rem 1rem;font-size:.67rem;text-transform:uppercase;letter-spacing:.09em;font-weight:500;color:rgba(255,255,255,.65);text-align:left;}
 .inv-tbl thead th.r{text-align:right;}
 .inv-tbl thead th.c{text-align:center;}
-.inv-tbl tbody td{padding:.72rem 1rem;border-bottom:1px solid var(--border);font-size:.86rem;}
+.inv-tbl tbody td{padding:.72rem 1rem;border-bottom:1px solid var(--border);font-size:.90rem;overflow-wrap:break-word;}
+.inv-tbl tbody td:first-child{text-transform:uppercase;}
 .inv-tbl tbody tr:nth-child(even) td{background:#f6f8fd;}
 .inv-tbl tbody tr:last-child td{border-bottom:none;}
 .inv-tbl td.c{text-align:center;color:var(--muted);}
@@ -485,6 +486,7 @@ tbody tr:hover td{background:var(--ice);cursor:pointer;}
       <div class="modal-bar-acts">
         <button class="btn btn-white btn-sm" onclick="printInv()">🖨 Print</button>
         <button class="btn btn-primary btn-sm" onclick="dlPDF()">⬇ PDF</button>
+        <button class="btn btn-white btn-sm" onclick="shareInv()">📤 Share</button>
         <button class="xbtn" onclick="closeModal()">✕</button>
       </div>
     </div>
@@ -968,8 +970,8 @@ function openInv(num){
     <!-- ─ TOTALS ─ -->
     <div class="totals-wrap">
       <div class="totals-box">
-        <div class="tot-row"><span style="color:var(--muted)">Subtotal</span><span>${cur} ${fmt(inv.total)}</span></div>
-        <div class="tot-row"><span style="color:var(--muted)">Tax (0%)</span><span>${cur} 0.00</span></div>
+        <div class="tot-row"><span style="color:var(--ink)">Subtotal</span><span>${cur} ${fmt(inv.total)}</span></div>
+        <div class="tot-row"><span style="color:var(--ink)">Tax (0%)</span><span>${cur} 0.00</span></div>
         <div class="tot-row"><span>Total Due</span><span class="grand">${cur} ${fmt(inv.total)}</span></div>
       </div>
     </div>
@@ -989,6 +991,23 @@ function closeModal(){ ge('overlay').classList.remove('open'); document.body.sty
 
 /* ═══ PDF ════════════════════════════════════════════════════ */
 function dlPDF(){ if(curInv) makePDF(curInv); }
+function shareInv(){
+  if(!curInv) return;
+  const inv = curInv;
+  const cur = 'S$';
+  const message = `Invoice #${inv.number} from ${CFG.name}
+
+Client: ${inv.name}
+Total: ${cur} ${fmt(inv.total)}
+Status: ${cap(inv.status)}
+
+${inv.date ? 'Date: ' + inv.date : ''}
+${inv.due ? 'Due: ' + inv.due : ''}
+
+Please find the attached invoice.`;
+  const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+  window.open(whatsappUrl, '_blank');
+}
 function quickPDF(num){ const inv=ALL.find(i=>i.number===num); if(inv) makePDF(inv); }
 
 function makePDF(inv){
@@ -1000,7 +1019,7 @@ function makePDF(inv){
   // ── IMAGE PLACEHOLDERS ── replace these URLs when you have the images
   const HEADER_IMG_URL = './header.png';  // e.g. 'https://yourdomain.com/header.png'
   const FOOTER_IMG_URL = './footer.png';  // e.g. 'https://yourdomain.com/footer.png'
-  const HEADER_H = 28;   // header image height in mm — adjust to match your image
+  const HEADER_H = 35;   // header image height in mm — adjust to match your image
   const FOOTER_H = 35;   // footer image height in mm — adjust to match your image
   const CONTENT_TOP = HEADER_H + 4;       // content starts below header
   const CONTENT_BTM = 297 - FOOTER_H - 4; // content ends above footer
