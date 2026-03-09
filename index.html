@@ -1103,7 +1103,7 @@ function makePDF(inv){
 
   function drawHeaderFooter(){
     if(HEADER_IMG_URL !== 'HEADER_IMAGE_URL_HERE'){
-      doc.addImage(HEADER_IMG_URL, 'PNG', 0, 0, W, HEADER_H);
+      doc.addImage(HEADER_IMG_URL, 'PNG', 0, 0, W, HEADER_H,'',NONE);
     } else {
       doc.setFillColor(11,29,58);
       doc.rect(0,0,W,HEADER_H,'F');
@@ -1128,7 +1128,7 @@ function makePDF(inv){
     }
 
     if(FOOTER_IMG_URL !== 'FOOTER_IMAGE_URL_HERE'){
-      doc.addImage(FOOTER_IMG_URL, 'PNG', 0, 297-FOOTER_H, W, FOOTER_H);
+      doc.addImage(FOOTER_IMG_URL, 'PNG', 0, 297-FOOTER_H, W, FOOTER_H,'',NONE);
     } else {
       const fy = 297 - FOOTER_H;
       doc.setFillColor(245,249,255);
