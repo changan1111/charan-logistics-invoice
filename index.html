@@ -1109,13 +1109,25 @@ function makePDF(inv){
 
   // ── INVOICE META (top-right, below header) ──
   const metaY = CONTENT_TOP + 4;
-  // draw invoice heading on single line to avoid overlapping
-  const heading = 'INVOICE #' + inv.number;
+  // draw label and number on the same baseline
+  const numStr = '#'+inv.number;
+  // compute width of number at its font size so we can position the label to its left
   doc.setFont('helvetica','bold');
-  // choose a size that keeps both label and number legible
+  doc.setFontSize(15);
+  const numW = doc.getTextWidth(numStr);
+
+  // label
+  doc.setFont('helvetica','bold');
   doc.setFontSize(12);
+  doc.setTextColor(130,150,180);
+  // place label just to the left of number with a small gap
+  doc.text('INVOICE', W-M - numW - 5, metaY);
+
+  // number
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(15);
   doc.setTextColor(11,29,58);
-  doc.text(heading, W-M, metaY, {align:'right'};)
+  doc.text(numStr, W-M, metaY, {align:'right'});
 
   // date/due info below
   doc.setFont('helvetica','normal');
