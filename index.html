@@ -207,7 +207,7 @@ tbody tr:hover td{background:var(--ice);cursor:pointer;}
 }
 .inv-logo svg{width:26px;height:26px;fill:white;}
 .inv-biz-name{font-family:'Outfit Garamond',serif;font-size:1.25rem;font-weight:600;color:var(--ink);line-height:1.1;margin-bottom:.25rem;}
-.inv-biz-addr{font-size:.8rem;color:var(--muted);line-height:1.75;}
+.inv-biz-addr{font-size:.98rem;color:var(--ink);line-height:1.75;}
 .inv-numbox{text-align:right;}
 .inv-num-lbl{font-size:.64rem;text-transform:uppercase;letter-spacing:.12em;color:var(--ink);margin-bottom:.3rem;display:inline-block;margin-right:.5rem;}
 .inv-num{font-family:'Outfit',serif;font-size:2.1rem;font-weight:700;color:var(--ink);line-height:1;display:inline;}
@@ -218,9 +218,9 @@ tbody tr:hover td{background:var(--ice);cursor:pointer;}
 
 /* Bill-to / From — client address prominently shown */
 .inv-parties{display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;margin-bottom:2rem;}
-.p-lbl{font-size:.64rem;text-transform:uppercase;letter-spacing:.1em;font-weight:600;color:var(--sky);margin-bottom:.5rem;}
+.p-lbl{font-size:.98rem;text-transform:uppercase;letter-spacing:.1em;font-weight:600;color:var(--sky);margin-bottom:.5rem;}
 .p-name{font-weight:600;font-size:.98rem;color:var(--ink);margin-bottom:.2rem;}
-.p-addr{font-size:.83rem;color:var(--ink);line-height:1.8;}
+.p-addr{font-size:.98rem;color:var(--ink);line-height:1.8;}
 .p-status{margin-top:.65rem;}
 
 /* Line items */
@@ -1109,36 +1109,52 @@ function makePDF(inv){
 
   // ── INVOICE META (top-right, below header) ──
   const metaY = CONTENT_TOP + 4;
+  // draw label and number on the same baseline
+  const numStr = '#'+inv.number;
+  // compute width of number at its font size so we can position the label to its left
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(15);
+  const numW = doc.getTextWidth(numStr);
+
+  // label
   doc.setFont('helvetica','normal');
   doc.setFontSize(6.5);
   doc.setTextColor(130,150,180);
-  doc.text('INVOICE', W-M, metaY, {align:'right'});
+  // place label just to the left of number with a small gap
+  doc.text('INVOICE', W-M - numW - 2, metaY);
+
+  // number
   doc.setFont('helvetica','bold');
   doc.setFontSize(15);
   doc.setTextColor(11,29,58);
-  doc.text('#'+inv.number, W-M, metaY+8, {align:'right'});
+  doc.text(numStr, W-M, metaY, {align:'right'});
+
+  // date/due info below
   doc.setFont('helvetica','normal');
   doc.setFontSize(14);
   doc.setTextColor(11,29,58);
-  if(inv.date) doc.text('Date: '+inv.date, W-M, metaY+14, {align:'right'});
-  if(inv.due)  doc.text('Due:  '+inv.due,  W-M, metaY+20, {align:'right'});
+  if(inv.date) doc.text('Date: '+inv.date, W-M, metaY+8, {align:'right'});
+  if(inv.due)  doc.text('Due:  '+inv.due,  W-M, metaY+14, {align:'right'});
 
   // ── BILLED TO / FROM ──
   const partyY = CONTENT_TOP + 4;
 
+  // left column (billed to)
   doc.setFont('helvetica','bold');
-  doc.setFontSize(6.5);
+  doc.setFontSize(14);
   doc.setTextColor(59,130,196);
   doc.text('BILLED TO', M, partyY);
   doc.setFont('helvetica','bold');
-  doc.setFontSize(10);
+  doc.setFontSize(14);
   doc.setTextColor(11,29,58);
-  doc.text(inv.name||'—', M, partyY+7);
+  doc.text(inv.name||'—', M, partyY+8);
   doc.setFont('helvetica','normal');
   doc.setFontSize(14);
   doc.setTextColor(11,29,58);
-  const aLines = (inv.addr||'').split(',').map(s=>s.trim()).filter(Boolean);
-  aLines.forEach((l,i) => doc.text(l, M, partyY+14+i*5.5));
+  const aLines = (inv.addr||'').split(/,|\n/).map(s=>s.trim()).filter(Boolean);
+  aLines.forEach((l,i) => doc.text(l, M, partyY+16+i*6));
+
+
 
   // ── LINE ITEMS TABLE ──
   const tableY = partyY + 14 + aLines.length * 5.5 + 3;
