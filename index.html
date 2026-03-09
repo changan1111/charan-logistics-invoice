@@ -134,6 +134,31 @@ body{font-family:'Outfit',sans-serif;background:var(--pale);color:var(--ink);min
 .pill.a-pending{background:var(--pend-bg);color:var(--pend-tx);border-color:var(--pend-tx);}
 .pill.a-overdue{background:var(--over-bg);color:var(--over-tx);border-color:var(--over-tx);}
 
+/* ── PAGINATION ──────────────────────────────────────────── */
+.pagination-bar{
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.65rem;
+  padding:.85rem 1.1rem;background:white;border-top:1px solid var(--border);
+  border-radius:0 0 var(--r) var(--r);
+}
+.pagination-info{font-size:.78rem;color:var(--muted);}
+.pagination-controls{display:flex;align-items:center;gap:.45rem;}
+.page-btn{
+  min-width:30px;height:30px;border-radius:6px;border:1.5px solid var(--border);
+  background:white;color:var(--ink);font-size:.78rem;font-weight:500;
+  cursor:pointer;display:inline-flex;align-items:center;justify-content:center;
+  transition:all .15s;font-family:'Outfit',sans-serif;padding:0 .4rem;
+}
+.page-btn:hover:not(:disabled){border-color:var(--sky);color:var(--sky);}
+.page-btn.active{background:var(--navy);color:white;border-color:var(--navy);}
+.page-btn:disabled{opacity:.4;cursor:not-allowed;}
+.page-size-wrap{display:flex;align-items:center;gap:.45rem;font-size:.78rem;color:var(--muted);}
+.page-size-select{
+  background:white;border:1.5px solid var(--border);border-radius:6px;
+  padding:.22rem .5rem;font-family:'Outfit',sans-serif;font-size:.78rem;color:var(--ink);
+  cursor:pointer;transition:border-color .15s;
+}
+.page-size-select:focus{outline:none;border-color:var(--sky);}
+
 /* ── TABLE ───────────────────────────────────────────────── */
 .tcard{background:white;border-radius:var(--r);border:1px solid var(--border);box-shadow:var(--sh-sm);overflow:hidden;animation:up .45s ease .1s both;}
 table{width:100%;border-collapse:collapse;}
@@ -230,12 +255,12 @@ tbody tr:hover td{background:var(--ice);cursor:pointer;}
 .inv-tbl thead th.r{text-align:right;}
 .inv-tbl thead th.c{text-align:center;}
 .inv-tbl tbody td{padding:.72rem 1rem;border-bottom:1px solid var(--border);font-size:.90rem;overflow-wrap:break-word;}
-.inv-tbl tbody td:first-child{text-transform:uppercase;}
 .inv-tbl tbody tr:nth-child(even) td{background:#f6f8fd;}
 .inv-tbl tbody tr:last-child td{border-bottom:none;}
 .inv-tbl td.c{text-align:center;color:var(--muted);}
 .inv-tbl td.r{text-align:right;}
 .inv-tbl td.r.bold{font-weight:600;}
+.inv-tbl td.date-col{white-space:nowrap;color:var(--muted);font-size:.82rem;}
 
 /* Totals */
 .totals-wrap{display:flex;justify-content:flex-end;margin-bottom:2rem;}
@@ -309,15 +334,7 @@ tbody tr:hover td{background:var(--ice);cursor:pointer;}
   .tcard{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
   table{ min-width:580px; }
 
-  /* Hide Date, Items, Actions columns on mobile */
-  /*thead th:nth-child(3),
-  thead th:nth-child(4),
-  thead th:nth-child(7),
-  tbody td:nth-child(3),
-  tbody td:nth-child(4),
-  tbody td:nth-child(7){ display:none; }*/
-
-    thead th:nth-child(3),
+  thead th:nth-child(3),
   tbody td:nth-child(3){ min-width:85px; white-space:nowrap; }
   thead th:nth-child(4),
   tbody td:nth-child(4){ min-width:100px; white-space:nowrap; text-align:right; }
@@ -364,6 +381,10 @@ tbody tr:hover td{background:var(--ice);cursor:pointer;}
   /* CFG PANEL */
   .cfg-grid{ grid-template-columns:1fr; }
   .cfg-inner{ padding:1rem 1rem 1.25rem; }
+
+  /* PAGINATION */
+  .pagination-bar{ flex-direction:column; align-items:flex-start; gap:.5rem; }
+  .pagination-controls{ flex-wrap:wrap; }
 }
 
 @media(max-width:400px){
@@ -399,8 +420,8 @@ tbody tr:hover td{background:var(--ice);cursor:pointer;}
       <p>Paste your full Sheet URL or ID. Tab names must be <b style="color:white">Clients</b> and <b style="color:white">LineItems</b>. Sheet must be published (File → Share → Publish to web → CSV).</p>
     </div>
     <div class="cfg-grid">
-<div class="cfg-field" style="display:none">
-  <label>Google Sheet ID</label>
+      <div class="cfg-field" style="display:none">
+        <label>Google Sheet ID</label>
         <input id="cfgId" placeholder="Paste full Sheet URL or bare ID…"/>
       </div>
       <div class="cfg-field">
@@ -461,20 +482,35 @@ tbody tr:hover td{background:var(--ice);cursor:pointer;}
         <tr>
           <th>Invoice #</th>
           <th>Client</th>
-          <th>Date</th>
+          <th>Billing Date</th>
           <th class="r">Amount</th>
           <th>Status</th>
           <th class="c">Actions</th>
         </tr>
       </thead>
       <tbody id="tBody">
-        <tr><td colspan="7"><div class="state">
+        <tr><td colspan="6"><div class="state">
           <div class="state-ico">📋</div>
           <div class="state-title">Connect Your Sheet</div>
           <div class="state-msg">Click ⚙ Settings above, paste your Google Sheet ID, and click Save &amp; Load.</div>
         </div></td></tr>
       </tbody>
     </table>
+    <!-- PAGINATION -->
+    <div class="pagination-bar" id="paginationBar" style="display:none">
+      <div class="pagination-info" id="paginationInfo"></div>
+      <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+        <div class="page-size-wrap">
+          Show
+          <select class="page-size-select" id="pageSizeSelect" onchange="onPageSizeChange()">
+            <option value="50" selected>50</option>
+            <option value="100">100</option>
+          </select>
+          per page
+        </div>
+        <div class="pagination-controls" id="paginationControls"></div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -495,6 +531,10 @@ tbody tr:hover td{background:var(--ice);cursor:pointer;}
 </div>
 
 <script>
+/* ═══ CONFIG — easy to change ══════════════════════════════ */
+const PAGE_SIZE_OPTIONS = [50, 100]; // add more sizes here if needed in future
+const DEFAULT_PAGE_SIZE = 50;        // default records per page
+
 /* ═══ STATE ════════════════════════════════════════════════ */
 let CFG = {
   id:   'SHEET_ID_PLACEHOLDER',
@@ -503,32 +543,39 @@ let CFG = {
   cur:  localStorage.getItem('im_cur')  || 'SGD ',
 };
 let ALL=[], SHOWN=[], activeFilter='all', curInv=null;
+let currentPage = 1;
+let pageSize = DEFAULT_PAGE_SIZE;
 
 /* ═══ INIT ═════════════════════════════════════════════════ */
 window.addEventListener('DOMContentLoaded', ()=>{
-  const el = (id)=>document.getElementById(id);
-
-  // Read fresh from localStorage each time page loads
   const savedId   = 'SHEET_ID_PLACEHOLDER';
   const savedName = localStorage.getItem('im_name') || 'Charan Logistics';
   const savedAddr = localStorage.getItem('im_addr') || '';
   const savedCur  = localStorage.getItem('im_cur')  || '₹';
 
-  // Sync CFG from storage
   CFG.id   = savedId;
   CFG.name = savedName;
   CFG.addr = savedAddr;
   CFG.cur  = savedCur;
 
-  // Populate inputs
-  el('cfgId').value   = savedId;
-  el('cfgName').value = savedName;
-  el('cfgAddr').value = savedAddr;
-  el('cfgCur').value  = savedCur;
+  ge('cfgId').value   = savedId;
+  ge('cfgName').value = savedName;
+  ge('cfgAddr').value = savedAddr;
+  ge('cfgCur').value  = savedCur;
 
-  console.log('Loaded config — Sheet ID:', savedId || '(not set)');
+  // Build page size dropdown from config
+  const sel = ge('pageSizeSelect');
+  sel.innerHTML = '';
+  PAGE_SIZE_OPTIONS.forEach(sz => {
+    const opt = document.createElement('option');
+    opt.value = sz;
+    opt.textContent = sz;
+    if(sz === DEFAULT_PAGE_SIZE) opt.selected = true;
+    sel.appendChild(opt);
+  });
+  pageSize = DEFAULT_PAGE_SIZE;
 
-  el('cfgToggle').addEventListener('click',()=>el('cfgPanel').classList.toggle('hidden'));
+  ge('cfgToggle').addEventListener('click',()=>ge('cfgPanel').classList.toggle('hidden'));
   updateSheetLink();
   if(CFG.id) loadData();
 });
@@ -536,26 +583,17 @@ window.addEventListener('DOMContentLoaded', ()=>{
 /* ═══ CONFIG ════════════════════════════════════════════════ */
 function extractSheetId(raw){
   raw = raw.trim();
-
-  // ❌ Detect wrong published /d/e/ URL and warn immediately
   if(raw.includes('/spreadsheets/d/e/')){
     alert('⚠️ Wrong URL!\n\nYou pasted the "Publish to web" link.\n\nInstead, copy the URL directly from your browser address bar while the sheet is open.\n\nIt should look like:\nhttps://docs.google.com/spreadsheets/d/1BxiMVs0XRA5.../edit');
     return '';
   }
-
-  // ✅ Normal editor URL: /spreadsheets/d/SHEET_ID/edit
   const urlMatch = raw.match(/\/spreadsheets\/d\/([a-zA-Z0-9_-]{20,})/);
   if(urlMatch) return urlMatch[1];
-
-  // ✅ Already a bare ID (long alphanumeric string, min 20 chars)
   if(/^[a-zA-Z0-9_-]{20,}$/.test(raw)) return raw;
-
-  // Too short — probably wrong
   if(raw.length > 0 && raw.length < 20){
-    alert('⚠️ That does not look like a valid Sheet ID.\n\nPlease copy the URL from your browser address bar while the sheet is open.\nIt should look like:\nhttps://docs.google.com/spreadsheets/d/1BxiMVs0XRA5.../edit');
+    alert('⚠️ That does not look like a valid Sheet ID.\n\nPlease copy the URL from your browser address bar while the sheet is open.');
     return '';
   }
-
   return raw;
 }
 
@@ -566,45 +604,21 @@ function saveConfig(){
   const addr    = ge('cfgAddr').value.trim() || '';
   const cur     = ge('cfgCur').value.trim()  || '₹';
 
-  // Update CFG object
   CFG.id   = cleanId;
   CFG.name = name;
   CFG.addr = addr;
   CFG.cur  = cur;
 
-  // Show the clean extracted ID back in the input
   ge('cfgId').value = cleanId;
 
-  // ── Console diagnostics ──
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  console.log('📋 Raw input   :', rawId);
-  console.log('🔑 Extracted ID:', cleanId);
-  console.log('📛 Biz Name    :', name);
-  console.log('📍 Address     :', addr);
-  console.log('🔗 Sheet URL   :', 'https://docs.google.com/spreadsheets/d/' + cleanId + '/edit');
-  console.log('📡 CSV Test URL:', 'https://docs.google.com/spreadsheets/d/' + cleanId + '/gviz/tq?tqx=out:csv&sheet=Clients');
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  if(!cleanId){ console.error('❌ Sheet ID is empty!'); return; }
 
-  if(!cleanId){
-    console.error('❌ Sheet ID is empty! Paste the URL from your browser address bar while the sheet is open.');
-    return;
-  }
-  if(cleanId.length < 20){
-    console.warn('⚠️ Sheet ID looks too short (' + cleanId.length + ' chars). Expected ~44 chars. Got: ' + cleanId);
-  } else {
-    console.log('✅ Sheet ID looks valid (' + cleanId.length + ' chars)');
-  }
-
-  // Save each key separately
   try {
     localStorage.setItem('im_id',   cleanId);
     localStorage.setItem('im_name', name);
     localStorage.setItem('im_addr', addr);
     localStorage.setItem('im_cur',  cur);
-    console.log('💾 Saved to localStorage OK');
-  } catch(e) {
-    console.warn('localStorage save failed:', e);
-  }
+  } catch(e) { console.warn('localStorage save failed:', e); }
 
   updateSheetLink();
   ge('cfgStatus').textContent = '✓ Saved  (ID: ' + cleanId.substring(0,14) + '...)';
@@ -612,33 +626,34 @@ function saveConfig(){
   ge('cfgPanel').classList.add('hidden');
   loadData();
 }
+
 function updateSheetLink(){
   ge('sheetLink').href = CFG.id
     ? `https://docs.google.com/spreadsheets/d/${CFG.id}/edit`
     : 'https://docs.google.com/spreadsheets';
 }
 
+/* ═══ PAGE SIZE CHANGE ══════════════════════════════════════ */
+function onPageSizeChange(){
+  pageSize = parseInt(ge('pageSizeSelect').value) || DEFAULT_PAGE_SIZE;
+  currentPage = 1;
+  renderRows();
+}
+
 /* ═══ DATA ══════════════════════════════════════════════════ */
 async function loadData(){
   if(!CFG.id){ stateRow('📋','Connect Your Sheet','Click ⚙ Settings, paste your Google Sheet URL or ID, and click Save & Load.'); return; }
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  console.log('🔄 Loading data for Sheet ID:', CFG.id);
   loadingRow();
   try{
     const [clients, lineItems] = await Promise.all([
       fetchSheet('Clients'), fetchSheet('LineItems')
     ]);
-    console.log('✅ Clients rows loaded   :', clients.length);
-    console.log('✅ LineItems rows loaded :', lineItems.length);
-    if(clients.length > 0) console.log('   First row keys:', Object.keys(clients[0]).join(', '));
     ALL = build(clients, lineItems);
-    console.log('✅ Invoices built:', ALL.length);
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     renderStats();
     applyFilters();
   } catch(e){
     const msg = e.message||'Unknown error';
-    ge('tBody').innerHTML=`<tr><td colspan="7"><div class="state">
+    ge('tBody').innerHTML=`<tr><td colspan="6"><div class="state">
       <div class="state-ico">⚠️</div>
       <div class="state-title">Could Not Load Data</div>
       <div class="state-msg" style="max-width:560px;text-align:left">
@@ -654,8 +669,7 @@ async function loadData(){
           <li>Come back here and click <b>↻ Try Again</b></li>
         </ol>
         <br>
-        Also confirm your two sheet tab names at the bottom of Google Sheets are:<br>
-        <b>Clients</b> &nbsp;and&nbsp; <b>LineItems</b>
+        Also confirm your two sheet tab names are: <b>Clients</b> and <b>LineItems</b>
       </div>
       <div style="margin-top:1.4rem;display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap">
         <button class="btn btn-primary btn-sm" onclick="loadData()">↻ Try Again</button>
@@ -663,12 +677,11 @@ async function loadData(){
         <a href="https://docs.google.com/spreadsheets/d/${CFG.id}/edit" target="_blank" class="btn btn-white btn-sm">Open Sheet ↗</a>
       </div>
     </div></td></tr>`;
+    ge('paginationBar').style.display='none';
   }
 }
 
-// Try multiple possible tab name variants automatically
 async function fetchSheet(primaryName){
-  // Try these name variants in order
   const variants = primaryName === 'Clients'
     ? ['Clients', 'clients', 'Client', 'Sheet2', 'Sheet1']
     : ['LineItems', 'Line Items', 'lineitems', 'Lineitems', 'Line_Items', 'Sheet1', 'Sheet2'];
@@ -678,12 +691,11 @@ async function fetchSheet(primaryName){
     try {
       const url = `https://docs.google.com/spreadsheets/d/${CFG.id}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(name)}`;
       let r;
-      try { r = await fetch(url); } catch(e){ lastErr=`Network error — sheet not published or ID wrong.`; continue; }
+      try { r = await fetch(url); } catch(e){ lastErr=`Network error`; continue; }
       if(!r.ok){ lastErr=`Tab "${name}" → HTTP ${r.status}`; continue; }
       const txt = await r.text();
       if(txt.trim().startsWith('<!') || txt.trim().startsWith('<html')){ lastErr=`Sheet not published publicly.`; continue; }
       if(txt.trim()===''){ lastErr=`Tab "${name}" is empty.`; continue; }
-      // success — log which name worked
       console.log(`✅ Loaded "${primaryName}" using tab name: "${name}"`);
       return parseCSV(txt);
     } catch(e){ lastErr=e.message; continue; }
@@ -695,25 +707,22 @@ function parseCSV(raw){
   const lines = splitCSVLines(raw.trim());
   if(!lines.length) return [];
   const hdr = parseCSVRow(lines[0]).map(h=>h.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,''));
-  console.log('CSV headers:', hdr.join(' | '));
   const rows = lines.slice(1).map(l=>{
     const v = parseCSVRow(l);
     const o = {};
     hdr.forEach((h,i)=>{ if(h) o[h] = (v[i]||'').trim(); });
     return o;
   }).filter(r=>Object.values(r).some(v=>v));
-  console.log('CSV first row:', JSON.stringify(rows[0]));
   return rows;
 }
 
-// Properly split CSV respecting quoted fields with commas inside
 function parseCSVRow(line){
   const out = [];
   let cur = '', inQ = false, i = 0;
   while(i < line.length){
     const ch = line[i];
     if(ch === '"'){
-      if(inQ && line[i+1] === '"'){ cur += '"'; i+=2; continue; } // escaped quote
+      if(inQ && line[i+1] === '"'){ cur += '"'; i+=2; continue; }
       inQ = !inQ;
     } else if(ch === ',' && !inQ){
       out.push(cur); cur = '';
@@ -726,7 +735,6 @@ function parseCSVRow(line){
   return out;
 }
 
-// Split into lines respecting quoted newlines
 function splitCSVLines(raw){
   const lines = [];
   let cur = '', inQ = false;
@@ -743,9 +751,6 @@ function splitCSVLines(raw){
   return lines;
 }
 
-// Keep old csvRow as alias
-function csvRow(line){ return parseCSVRow(line); }
-
 /* ── flexible column helpers ── */
 function getDesc(li){
   return li.description||li.delivery_description||li.item||li.item_description||li.name||'—';
@@ -758,71 +763,54 @@ function getPrice(li){
   return parseFloat(li.unit_price||li.price||li.amount||0)||0;
 }
 function getInvNum(r){
-  // Your sheet uses "Invoice Number" → normalizes to "invoice_number"
   const v = r.invoice_number||r.invoice_no||r.invoice_||r.invoice||r.id||'';
   return String(v).trim();
 }
+// Get date from a LineItem row
+function getLineItemDate(li){
+  return li.date||li.delivery_date||li.service_date||li.item_date||'';
+}
 
 function build(clients, lineItems){
-  const liNums = lineItems.map(li=>getInvNum(li)).filter(Boolean).join(', ') || '(none)';
-  const clNums = clients.slice(0,5).map(c=>getInvNum(c)).join(', ');
-  // Filter out rows where invoice number is empty or looks like a junk value
-  // (addresses, status values, amounts accidentally parsed as invoice rows)
   const validClients = clients.filter(c => {
     const num = getInvNum(c);
     if(!num) return false;
-    if(num.includes(',')) return false;         // junk from bad CSV split
-    if(num.length > 30) return false;           // too long to be invoice number
-    if(/^(pending|paid|overdue)$/i.test(num)) return false; // status words
-    if(/^\d+$/.test(num)) return false;         // pure number like 312
-    if(/^[a-zA-Z\s]+$/.test(num)) return false; // pure words like Singapore
+    if(num.includes(',')) return false;
+    if(num.length > 30) return false;
+    if(/^(pending|paid|overdue)$/i.test(num)) return false;
+    if(/^\d+$/.test(num)) return false;
+    if(/^[a-zA-Z\s]+$/.test(num)) return false;
     return true;
   });
 
-  console.log('Valid clients after filter:', validClients.length);
-
   return validClients.map(c => {
     const num = getInvNum(c);
-
-    // Match line items by invoice number
     const items = lineItems.filter(li => {
       const ln = getInvNum(li);
       return ln && ln.trim().toLowerCase() === num.trim().toLowerCase();
     });
-    // Log whenever a match IS found
-    if(items.length > 0){
-      console.log('✅ MATCHED inv#', num, '→', items.length, 'line items:', JSON.stringify(items[0]));
-    }
 
-    // Calculate total from line items
     const calcTotal = items.reduce((s,li) => s + getQty(li)*getPrice(li), 0);
 
-    // Fallback to Total column — try every possible key name
-    // Google Sheets normalizes "Total" → "total", but log all keys to debug
     const allKeys = Object.keys(c);
-    if(num === getInvNum(clients[0])){
-      console.log('📋 Client row keys:', allKeys.join(', '));
-      console.log('📋 Client row values:', JSON.stringify(c));
-    }
-    // Try all likely column name variants
     const rawTotal = c.total || c.total_amount || c.amount || c.invoice_total
       || c.grand_total || c.net_amount || c.net || c.value
       || allKeys.filter(k=>k.includes('total')||k.includes('amount')||k.includes('price')).map(k=>c[k]).find(v=>parseFloat(v)>0)
       || '0';
-    // Strip currency symbols, commas, spaces before parsing
     const sheetTotal = parseFloat(String(rawTotal).trim().replace(/[$ ,]/g,'')) || 0;
-    console.log('💰 Invoice',num,'rawTotal=',rawTotal,'parsed=',sheetTotal,'keys=',allKeys.join(','));
     const total = calcTotal > 0 ? calcTotal : sheetTotal;
 
-    // Get status — your sheet uses "Status" col → normalizes to "status"
     const rawStatus = (c.status||c.payment_status||'pending').toLowerCase().trim();
     const status = ['paid','pending','overdue'].includes(rawStatus) ? rawStatus : 'pending';
+
+    // Billing date from Clients sheet
+    const billingDate = c.billing_date||c.date||c.invoice_date||today();
 
     return {
       number: num,
       name:   c.name||c.client_name||c.customer||'',
       addr:   c.address||c.client_address||'',
-      date:   c.date||c.invoice_date||today(),
+      billingDate,
       due:    c.due_date||c.due||'',
       status, total, items,
     };
@@ -845,6 +833,7 @@ function renderStats(){
 /* ═══ FILTER / TABLE ════════════════════════════════════════ */
 function setFilter(f, btn){
   activeFilter=f;
+  currentPage=1;
   document.querySelectorAll('.pill').forEach(p=>p.className='pill');
   btn.classList.add('pill','a-'+f);
   applyFilters();
@@ -854,27 +843,41 @@ function applyFilters(){
   const q=(ge('qSearch').value||'').toLowerCase();
   SHOWN = ALL.filter(inv=>{
     const mf = activeFilter==='all' || inv.status===activeFilter;
-    const mq = !q || inv.number.toLowerCase().includes(q) || inv.name.toLowerCase().includes(q) || inv.addr.toLowerCase().includes(q);
+    const mq = !q || inv.number.toLowerCase().includes(q) || inv.name.toLowerCase().includes(q) || (inv.addr||'').toLowerCase().includes(q);
     return mf && mq;
   });
+  currentPage = 1;
   renderRows();
 }
 
 function renderRows(){
   const cur='S$';
   const tb=ge('tBody');
+  const bar=ge('paginationBar');
+
   if(!SHOWN.length){
-    tb.innerHTML=`<tr><td colspan="7"><div class="state">
+    tb.innerHTML=`<tr><td colspan="6"><div class="state">
       <div class="state-ico">🔍</div>
       <div class="state-title">No Invoices Found</div>
       <div class="state-msg">No invoices match the current filter or search term.</div>
-    </div></td></tr>`; return;
+    </div></td></tr>`;
+    bar.style.display='none';
+    return;
   }
-  tb.innerHTML = SHOWN.map((inv,i)=>`
+
+  // Pagination calculations
+  const total = SHOWN.length;
+  const totalPages = Math.ceil(total / pageSize);
+  if(currentPage > totalPages) currentPage = totalPages;
+  const startIdx = (currentPage - 1) * pageSize;
+  const endIdx   = Math.min(startIdx + pageSize, total);
+  const pageItems = SHOWN.slice(startIdx, endIdx);
+
+  tb.innerHTML = pageItems.map((inv,i)=>`
     <tr style="animation:up .3s ease ${i*.04}s both" onclick="openInv('${esc(inv.number)}')">
       <td><span class="inum">#${inv.number}</span></td>
       <td><span class="cname">${inv.name||'—'}</span><span class="caddr">${shortAddr(inv.addr)}</span></td>
-      <td style="color:var(--muted);font-size:.81rem">${inv.date}</td>
+      <td style="color:var(--muted);font-size:.81rem">${inv.billingDate}</td>
       <td style="text-align:right"><span class="amtcell">${cur} ${fmt(inv.total)}</span></td>
       <td>${mkBadge(inv.status)}</td>
       <td><div class="acts" onclick="event.stopPropagation()">
@@ -882,6 +885,54 @@ function renderRows(){
         <button class="btn btn-sm btn-primary" onclick="quickPDF('${esc(inv.number)}')">PDF</button>
       </div></td>
     </tr>`).join('');
+
+  // Pagination bar
+  bar.style.display='flex';
+  ge('paginationInfo').textContent = `Showing ${startIdx+1}–${endIdx} of ${total} invoices`;
+
+  // Page buttons
+  const ctrl = ge('paginationControls');
+  let btns = '';
+  btns += `<button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>‹</button>`;
+
+  // Show max 7 page buttons with ellipsis
+  const range = getPageRange(currentPage, totalPages);
+  range.forEach(p => {
+    if(p === '...'){
+      btns += `<span style="padding:0 .2rem;color:var(--muted);font-size:.78rem">…</span>`;
+    } else {
+      btns += `<button class="page-btn${p===currentPage?' active':''}" onclick="goPage(${p})">${p}</button>`;
+    }
+  });
+
+  btns += `<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage===totalPages?'disabled':''}>›</button>`;
+  ctrl.innerHTML = btns;
+}
+
+function getPageRange(cur, total){
+  if(total <= 7) return Array.from({length:total},(_,i)=>i+1);
+  const pages = [];
+  if(cur <= 4){
+    for(let i=1;i<=5;i++) pages.push(i);
+    pages.push('...'); pages.push(total);
+  } else if(cur >= total-3){
+    pages.push(1); pages.push('...');
+    for(let i=total-4;i<=total;i++) pages.push(i);
+  } else {
+    pages.push(1); pages.push('...');
+    for(let i=cur-1;i<=cur+1;i++) pages.push(i);
+    pages.push('...'); pages.push(total);
+  }
+  return pages;
+}
+
+function goPage(p){
+  const totalPages = Math.ceil(SHOWN.length / pageSize);
+  if(p < 1 || p > totalPages) return;
+  currentPage = p;
+  renderRows();
+  // scroll table into view
+  ge('tBody').closest('.tcard').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
 function mkBadge(s){
@@ -898,12 +949,21 @@ function openInv(num){
   ge('mLabel').textContent = `Invoice #${inv.number} · ${inv.name}`;
 
   const hasItems = inv.items && inv.items.length;
+
+  // Check if line items have dates
+  const hasLineItemDates = hasItems && inv.items.some(li => getLineItemDate(li));
+
+  // Build table columns — include Date column if any line item has a date
+  const showDateCol = hasLineItemDates;
+
   const rows = hasItems
     ? inv.items.map(li=>{
         const q=getQty(li);
         const p=getPrice(li);
         const d=getDesc(li);
+        const liDate = getLineItemDate(li);
         return `<tr>
+          ${showDateCol ? `<td class="date-col">${liDate||'—'}</td>` : ''}
           <td>${d}</td>
           <td class="c">${q}</td>
           <td class="r">${cur} ${fmt(p)}</td>
@@ -911,6 +971,7 @@ function openInv(num){
         </tr>`;
       }).join('')
     : `<tr>
+        ${showDateCol ? `<td class="date-col">—</td>` : ''}
         <td style="color:var(--muted);font-style:italic">Invoice total (no line item breakdown)</td>
         <td class="c">—</td>
         <td class="r">—</td>
@@ -922,7 +983,6 @@ function openInv(num){
   const bizLines  = CFG.addr.split(',').map(s=>s.trim()).filter(Boolean).join('<br>');
 
   ge('invDoc').innerHTML = `
-    <!-- ─ HEADER: Logo + Business Name (left) | Invoice # (right) ─ -->
     <div class="inv-hd">
       <div class="inv-brand">
         <div class="inv-logo">
@@ -937,14 +997,13 @@ function openInv(num){
         <div class="inv-num-lbl">Invoice</div>
         <div class="inv-num">#${inv.number}</div>
         <div class="inv-num-sub">
-          ${inv.date?`<div>Issued: ${inv.date}</div>`:''}
+          ${inv.billingDate?`<div>Billing Date: ${inv.billingDate}</div>`:''}
           ${inv.due?`<div>Due: ${inv.due}</div>`:''}
         </div>
       </div>
     </div>
     <div class="inv-rule"></div>
 
-    <!-- ─ CLIENT ADDRESS ─ -->
     <div class="inv-parties">
       <div>
         <div class="p-lbl">Billed To</div>
@@ -959,15 +1018,14 @@ function openInv(num){
       </div>
     </div>
 
-    <!-- ─ LINE ITEMS ─ -->
     <table class="inv-tbl">
       <thead><tr>
+        ${showDateCol ? `<th>Date</th>` : ''}
         <th>Description</th><th class="c">Qty</th><th class="r">Rate</th><th class="r">Amount</th>
       </tr></thead>
       <tbody>${rows}</tbody>
     </table>
 
-    <!-- ─ TOTALS ─ -->
     <div class="totals-wrap">
       <div class="totals-box">
         <div class="tot-row"><span style="color:var(--ink)">Subtotal</span><span>${cur} ${fmt(inv.total)}</span></div>
@@ -976,7 +1034,6 @@ function openInv(num){
       </div>
     </div>
 
-    <!-- ─ FOOTER ─ -->
     <div class="inv-foot">
       <div class="inv-foot-note">Thank you for your business! Please make payment within 30 days.</div>
       <span class="badge ${bc}"><span class="bdot"></span>${cap(inv.status)}</span>
@@ -990,7 +1047,7 @@ function overlayClick(e){ if(e.target===ge('overlay')) closeModal(); }
 function closeModal(){ ge('overlay').classList.remove('open'); document.body.style.overflow=''; }
 
 /* ═══ PDF ════════════════════════════════════════════════════ */
-function dlPDF(){ 
+function dlPDF(){
   if(!curInv) return;
   const blob = makePDF(curInv);
   const url = URL.createObjectURL(blob);
@@ -1011,24 +1068,15 @@ function shareInv(){
       text: 'Please find the attached invoice.'
     }).catch(err => console.log('Share failed:', err));
   } else {
-    // Fallback to WhatsApp with text
     const inv = curInv;
     const cur = 'S$';
-    const message = `Invoice #${inv.number} from ${CFG.name}
-
-Client: ${inv.name}
-Total: ${cur} ${fmt(inv.total)}
-
-${inv.date ? 'Date: ' + inv.date : ''}
-${inv.due ? 'Due: ' + inv.due : ''}
-
-Please find the attached invoice.`;
+    const message = `Invoice #${inv.number} from ${CFG.name}\n\nClient: ${inv.name}\nTotal: ${cur} ${fmt(inv.total)}\n\n${inv.billingDate ? 'Billing Date: ' + inv.billingDate : ''}\n${inv.due ? 'Due: ' + inv.due : ''}\n\nPlease find the attached invoice.`;
     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   }
 }
-function quickPDF(num){ 
-  const inv=ALL.find(i=>i.number===num); 
+function quickPDF(num){
+  const inv=ALL.find(i=>i.number===num);
   if(inv){
     const blob = makePDF(inv);
     const url = URL.createObjectURL(blob);
@@ -1046,26 +1094,21 @@ function makePDF(inv){
   const W=210, M=20;
   const cur = 'S$';
 
-  // ── IMAGE PLACEHOLDERS ── replace these URLs when you have the images
-  const HEADER_IMG_URL = './header.png';  // e.g. 'https://yourdomain.com/header.png'
-  const FOOTER_IMG_URL = './footer.png';  // e.g. 'https://yourdomain.com/footer.png'
-  const HEADER_H = 35;   // header image height in mm — adjust to match your image
-  const FOOTER_H = 35;   // footer image height in mm — adjust to match your image
-  const CONTENT_TOP = HEADER_H + 4;       // content starts below header
-  const CONTENT_BTM = 297 - FOOTER_H - 4; // content ends above footer
+  const HEADER_IMG_URL = './header.png';
+  const FOOTER_IMG_URL = './footer.png';
+  const HEADER_H = 35;
+  const FOOTER_H = 35;
+  const CONTENT_TOP = HEADER_H + 4;
+  const CONTENT_BTM = 297 - FOOTER_H - 4;
 
-  // Helper: draw header+footer on a given page
   function drawHeaderFooter(){
-    // Header image — full width, top of page
     if(HEADER_IMG_URL !== 'HEADER_IMAGE_URL_HERE'){
       doc.addImage(HEADER_IMG_URL, 'PNG', 0, 0, W, HEADER_H);
     } else {
-      // Placeholder header band until real image is provided
       doc.setFillColor(11,29,58);
       doc.rect(0,0,W,HEADER_H,'F');
       doc.setFillColor(59,130,196);
       doc.rect(0,HEADER_H,W,2,'F');
-      // Logo
       doc.setFillColor(28,68,128);
       doc.roundedRect(M,6,22,16,2,2,'F');
       doc.setFillColor(59,130,196);
@@ -1074,7 +1117,6 @@ function makePDF(inv){
       doc.setFontSize(8);
       doc.setTextColor(255,255,255);
       doc.text('INV', M+11, 16, {align:'center'});
-      // Biz name
       doc.setFont('helvetica','bold');
       doc.setFontSize(12);
       doc.setTextColor(255,255,255);
@@ -1085,11 +1127,9 @@ function makePDF(inv){
       doc.text(CFG.addr, M+28, 20);
     }
 
-    // Footer image — full width, bottom of page
     if(FOOTER_IMG_URL !== 'FOOTER_IMAGE_URL_HERE'){
       doc.addImage(FOOTER_IMG_URL, 'PNG', 0, 297-FOOTER_H, W, FOOTER_H);
     } else {
-      // Placeholder footer band
       const fy = 297 - FOOTER_H;
       doc.setFillColor(245,249,255);
       doc.rect(0, fy, W, FOOTER_H, 'F');
@@ -1104,45 +1144,31 @@ function makePDF(inv){
     }
   }
 
-  // Draw header/footer on first page
   drawHeaderFooter();
 
-  // ── INVOICE META (top-right, below header) ──
+  // ── INVOICE META ──
   const metaY = CONTENT_TOP + 4;
-  // draw label and number on the same baseline
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(15);
   const numStr = '#'+inv.number;
-  // compute width of number at its font size so we can position the label to its left
-  doc.setFont('helvetica','bold');
-  doc.setFontSize(15);
   const numW = doc.getTextWidth(numStr);
-
-  // label
-  doc.setFont('helvetica','bold');
-  doc.setFontSize(15);
+  const labelW = doc.getTextWidth('INVOICE ');
   doc.setTextColor(130,150,180);
-  // place label just to the left of number with a small gap
-    const labelW = doc.getTextWidth('INVOICE ');
   doc.text('INVOICE', W-M - numW - labelW, metaY);
-  
-  // number
-  doc.setFont('helvetica','bold');
-  doc.setFontSize(15);
   doc.setTextColor(11,29,58);
   doc.text(numStr, W-M, metaY, {align:'right'});
 
-  // date/due info below
   doc.setFont('helvetica','normal');
   doc.setFontSize(14);
   doc.setTextColor(11,29,58);
-  if(inv.date) doc.text('Date: '+inv.date, W-M, metaY+8, {align:'right'});
-  if(inv.due)  doc.text('Due:  '+inv.due,  W-M, metaY+14, {align:'right'});
+  // ► "Billing Date:" label in PDF
+  if(inv.billingDate) doc.text('Billing Date: '+inv.billingDate, W-M, metaY+8, {align:'right'});
+  if(inv.due)         doc.text('Due: '+inv.due, W-M, metaY+14, {align:'right'});
 
   // ── BILLED TO / FROM ──
   const partyY = CONTENT_TOP + 4;
-
-  // left column (billed to)
   doc.setFont('helvetica','bold');
-  doc.setFontSize(12); // slightly smaller label
+  doc.setFontSize(12);
   doc.setTextColor(59,130,196);
   doc.text('BILLED TO', M, partyY);
   doc.setFont('helvetica','bold');
@@ -1155,19 +1181,47 @@ function makePDF(inv){
   const aLines = (inv.addr||'').split(/,|\n/).map(s=>s.trim()).filter(Boolean);
   aLines.forEach((l,i) => doc.text(l, M, partyY+12+i*5));
 
-
-
-  // ── LINE ITEMS TABLE ──
+  // ── LINE ITEMS TABLE — check if we have dates in line items ──
+  const hasLineItemDates = (inv.items||[]).some(li => getLineItemDate(li));
   const tableY = partyY + 14 + aLines.length * 5.5 + 3;
+
+  // Build table head & rows
+  const tableHead = hasLineItemDates
+    ? [['Date', 'Description', 'Qty', 'Rate', 'Amount']]
+    : [['Description', 'Qty', 'Rate', 'Amount']];
+
   const allRows = (inv.items||[]).map(li => {
     const q=getQty(li), p=getPrice(li);
+    const liDate = getLineItemDate(li);
+    if(hasLineItemDates){
+      return [liDate||'—', getDesc(li).toUpperCase(), String(q), cur+' '+fmt(p), cur+' '+fmt(q*p)];
+    }
     return [getDesc(li).toUpperCase(), String(q), cur+' '+fmt(p), cur+' '+fmt(q*p)];
   });
   if(!allRows.length){
-    allRows.push(['Invoice total (no line item breakdown)', '—', '—', cur+' '+fmt(inv.total)]);
+    if(hasLineItemDates){
+      allRows.push(['—', 'Invoice total (no line item breakdown)', '—', '—', cur+' '+fmt(inv.total)]);
+    } else {
+      allRows.push(['Invoice total (no line item breakdown)', '—', '—', cur+' '+fmt(inv.total)]);
+    }
   }
 
-  // paginate rows: 200 per page
+  // Column styles — updated for bigger font size
+  const colStyles = hasLineItemDates
+    ? {
+        0:{cellWidth:28, halign:'left'},  // Date
+        1:{cellWidth:'auto'},              // Description
+        2:{halign:'center', cellWidth:18}, // Qty
+        3:{halign:'right',  cellWidth:36}, // Rate
+        4:{halign:'right',  cellWidth:36, fontStyle:'bold'}, // Amount
+      }
+    : {
+        0:{cellWidth:'auto'},
+        1:{halign:'center', cellWidth:18},
+        2:{halign:'right',  cellWidth:36},
+        3:{halign:'right',  cellWidth:36, fontStyle:'bold'},
+      };
+
   const rowsPerPage = 200;
   const pages = [];
   for(let i = 0; i < allRows.length; i += rowsPerPage){
@@ -1175,36 +1229,30 @@ function makePDF(inv){
   }
 
   pages.forEach((pageRows, pi) => {
-    const startY = pi === 0 ? tableY : CONTENT_TOP; // top area on subsequent pages
+    const startY = pi === 0 ? tableY : CONTENT_TOP;
     doc.autoTable({
       startY,
-      head: [['Description','Qty','Rate','Amount']],
+      head: tableHead,
       body: pageRows,
       margin: {left:M, right:M, top: CONTENT_TOP, bottom: FOOTER_H+6},
       headStyles:{
         fillColor:[11,29,58],
         textColor:[175,205,240],
-        fontSize:8.5, // match body size
+        fontSize:10,        // ← bigger header font
         fontStyle:'bold',
-        cellPadding:4,
+        cellPadding:4.5,
       },
       bodyStyles:{
-        fontSize:8.5,
+        fontSize:10,        // ← bigger body font
         textColor:[25,45,80],
-        cellPadding:4,
+        cellPadding:4.5,
       },
       alternateRowStyles:{fillColor:[245,249,255]},
-      columnStyles:{
-        0:{cellWidth:'auto'},
-        1:{halign:'center', cellWidth:18},
-        2:{halign:'right',  cellWidth:36},
-        3:{halign:'right',  cellWidth:36, fontStyle:'bold'},
-      },
+      columnStyles: colStyles,
       styles:{lineColor:[220,232,248], lineWidth:0.3},
       didDrawPage: function(){
         drawHeaderFooter();
       },
-      // avoid splitting rows across pages
       pageBreak: 'auto',
     });
 
@@ -1214,7 +1262,7 @@ function makePDF(inv){
     }
   });
 
-  // add page numbers
+  // Page numbers
   const pageCount = doc.internal.getNumberOfPages();
   for(let p = 1; p <= pageCount; p++){
     doc.setPage(p);
@@ -1224,10 +1272,8 @@ function makePDF(inv){
     doc.text(`Page ${p} of ${pageCount}`, W/2, 290, {align:'center'});
   }
 
-  // ── TOTALS BOX — always after last row ──
+  // ── TOTALS BOX ──
   const fy = doc.lastAutoTable.finalY;
-
-  // If totals box would overlap footer, add new page
   if(fy + 42 > CONTENT_BTM){
     doc.addPage();
     drawHeaderFooter();
@@ -1243,7 +1289,7 @@ function makePDF(inv){
   doc.roundedRect(bx, by, bw, bh, 3, 3, 'S');
 
   doc.setFont('helvetica','normal');
-  doc.setFontSize(8);
+  doc.setFontSize(9);          // ← bigger totals font
   doc.setTextColor(110,130,160);
   doc.text('Subtotal', bx+8, by+10);
   doc.text('Tax (0%)', bx+8, by+19);
@@ -1255,11 +1301,11 @@ function makePDF(inv){
   doc.line(bx+5, by+23, bx+bw-5, by+23);
 
   doc.setFont('helvetica','bold');
-  doc.setFontSize(9);
+  doc.setFontSize(10);         // ← bigger total label
   doc.setTextColor(11,29,58);
   doc.text('TOTAL', bx+8, by+31);
   doc.setFont('helvetica','bold');
-  doc.setFontSize(12);
+  doc.setFontSize(13);         // ← bigger total amount
   doc.setTextColor(19,48,94);
   doc.text(cur+' '+fmt(inv.total), bx+bw-6, by+31, {align:'right'});
 
@@ -1270,30 +1316,20 @@ function printInv(){ window.print(); }
 
 /* ═══ HELPERS ════════════════════════════════════════════════ */
 function ge(id){return document.getElementById(id);}
-
-// Debug helper — run testSheet() in console to see raw data
-function testSheet(){
-  fetch(`https://docs.google.com/spreadsheets/d/${CFG.id}/gviz/tq?tqx=out:csv&sheet=Clients`)
-    .then(r=>r.text())
-    .then(t=>{
-      console.log('RAW CSV first 3 lines:');
-      t.split('\n').slice(0,3).forEach((l,i)=>console.log(i+':',l));
-    });
-}
 function fmt(n){return Number(n).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});}
 function cap(s){return s?s[0].toUpperCase()+s.slice(1):'';}
 function today(){return new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});}
 function shortAddr(a){if(!a)return '';const p=a.split(',');return p.length>2?p[0].trim()+', '+p[p.length-1].trim():a;}
 function esc(s){return(s||'').replace(/'/g,"\\'");}
 function loadingRow(){
-  ge('tBody').innerHTML=`<tr><td colspan="7"><div class="state">
+  ge('tBody').innerHTML=`<tr><td colspan="6"><div class="state">
     <div class="spin"></div>
     <div class="state-title">Loading…</div>
     <div class="state-msg">Fetching your invoices from Google Sheets.</div>
   </div></td></tr>`;
 }
 function stateRow(ico,title,msg){
-  ge('tBody').innerHTML=`<tr><td colspan="7"><div class="state">
+  ge('tBody').innerHTML=`<tr><td colspan="6"><div class="state">
     <div class="state-ico">${ico}</div>
     <div class="state-title">${title}</div>
     <div class="state-msg">${msg}</div>
