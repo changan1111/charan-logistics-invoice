@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 :root{
   --ink:#0b1d3a; --navy:#13305e; --mid:#1c4480; --steel:#2d5f9e; --sky:#3b82c4;
@@ -89,7 +90,7 @@ body{font-family:'Outfit',sans-serif;background:var(--pale);color:var(--ink);min
 
 /* ── STATS ───────────────────────────────────────────────── */
 .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:1rem;margin-bottom:1.8rem;}
-@media(max-width:850px){.stats{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:900px){.stats{grid-template-columns:repeat(3,1fr);}}
 @media(max-width:520px){.stats{grid-template-columns:repeat(2,1fr);}}
 .stat{
   background:var(--white);border-radius:var(--r);padding:1.15rem 1.25rem;
@@ -273,7 +274,68 @@ tbody tr:hover td{background:var(--ice);cursor:pointer;}
 .inv-foot{background:var(--pale);border-radius:10px;padding:.9rem 1.25rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;}
 .inv-foot-note{font-size:.79rem;color:var(--muted);}
 
-/* ── PRINT ────────────────────────────────────────────────── */
+/* ── CHART MODAL ─────────────────────────────────────────── */
+.chart-overlay{
+  display:none;position:fixed;inset:0;z-index:400;
+  background:rgba(7,18,38,.65);backdrop-filter:blur(6px);
+  align-items:center;justify-content:center;padding:1.5rem;
+}
+.chart-overlay.open{display:flex;}
+.chart-modal{
+  background:white;border-radius:18px;
+  width:100%;max-width:860px;max-height:92vh;overflow-y:auto;
+  box-shadow:var(--sh-lg);
+  animation:pop .28s cubic-bezier(.34,1.4,.64,1) both;
+}
+.chart-bar{
+  position:sticky;top:0;z-index:10;background:white;
+  padding:.9rem 1.5rem;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid var(--border);border-radius:18px 18px 0 0;
+}
+.chart-bar-title{font-size:1rem;font-weight:600;color:var(--ink);display:flex;align-items:center;gap:.5rem;}
+.chart-body{padding:1.5rem 1.75rem 2rem;}
+.chart-tabs{display:flex;gap:.5rem;margin-bottom:1.25rem;flex-wrap:wrap;}
+.chart-tab{
+  padding:.32rem .85rem;border-radius:20px;font-size:.78rem;font-weight:500;
+  cursor:pointer;background:var(--pale);color:var(--muted);border:1.5px solid var(--border);
+  transition:all .18s;font-family:'Outfit',sans-serif;
+}
+.chart-tab.active{background:var(--navy);color:white;border-color:var(--navy);}
+.chart-wrap{position:relative;height:320px;margin-bottom:1.5rem;}
+.chart-summary{
+  display:grid;grid-template-columns:repeat(2,1fr);gap:.85rem;
+}
+.cs-card{
+  background:var(--pale);border-radius:10px;padding:.9rem 1.1rem;
+  border:1px solid var(--border);
+}
+.cs-lbl{font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.3rem;}
+.cs-val{font-size:1.3rem;font-weight:700;color:var(--ink);}
+.cs-val.c-paid{color:var(--paid-tx);}
+.cs-val.c-pend{color:var(--pend-tx);}
+.cs-val.c-over{color:var(--over-tx);}
+.chart-tbl-wrap{overflow-x:auto;margin-top:1.5rem;}
+.chart-tbl{width:100%;border-collapse:collapse;font-size:.82rem;}
+.chart-tbl thead tr{background:var(--ink);}
+.chart-tbl thead th{padding:.6rem .9rem;color:rgba(255,255,255,.65);font-size:.67rem;text-transform:uppercase;letter-spacing:.09em;text-align:left;}
+.chart-tbl thead th.r{text-align:right;}
+.chart-tbl tbody td{padding:.65rem .9rem;border-bottom:1px solid var(--border);}
+.chart-tbl tbody td.r{text-align:right;font-weight:600;}
+.chart-tbl tbody tr:last-child td{border-bottom:none;}
+.chart-tbl tbody tr:hover td{background:var(--ice);}
+@media(max-width:600px){
+  .chart-summary{grid-template-columns:1fr 1fr;}
+  .chart-wrap{height:240px;}
+  .chart-body{padding:1rem;}
+}
+
+/* ── MONTHLY PERFORMANCE STAT CARD ──────────────────────── */
+.stat-perf{cursor:pointer;transition:all .2s;}
+.stat-perf:hover{transform:translateY(-2px);box-shadow:var(--sh-md);border-color:var(--sky);}
+.stat-perf-ico{font-size:1.6rem;margin-bottom:.3rem;}
+.stat-perf-lbl{font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--sky);margin-bottom:.2rem;font-weight:600;}
+.stat-perf-sub{font-size:.72rem;color:var(--muted);}
+
 @media print{
   *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
   body>*:not(.overlay){display:none!important;}
@@ -453,7 +515,12 @@ tbody tr:hover td{background:var(--ice);cursor:pointer;}
     <div class="stat" style="animation-delay:.1s"><div class="stat-lbl">Total Value</div><div class="stat-val" id="s1">—</div></div>
     <div class="stat" style="animation-delay:.15s"><div class="stat-lbl">Paid</div><div class="stat-val c-paid" id="s2">—</div><div class="stat-sub" id="s2a"></div></div>
     <div class="stat" style="animation-delay:.2s"><div class="stat-lbl">Pending</div><div class="stat-val c-pend" id="s3">—</div><div class="stat-sub" id="s3a"></div></div>
-    <div class="stat" style="animation-delay:.25s"><div class="stat-lbl">Overdue</div><div class="stat-val c-over" id="s4">—</div><div class="stat-sub" id="s4a"></div></div>
+
+    <div class="stat stat-perf" style="animation-delay:.3s" onclick="openChart()">
+      <div class="stat-perf-ico">📊</div>
+      <div class="stat-perf-lbl">Monthly Performance</div>
+      <div class="stat-perf-sub">Click to view chart</div>
+    </div>
   </div>
 
   <!-- DASH HEADER -->
@@ -509,6 +576,47 @@ tbody tr:hover td{background:var(--ice);cursor:pointer;}
           per page
         </div>
         <div class="pagination-controls" id="paginationControls"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CHART MODAL -->
+<div class="chart-overlay" id="chartOverlay" onclick="chartOverlayClick(event)">
+  <div class="chart-modal" id="chartModal">
+    <div class="chart-bar">
+      <div class="chart-bar-title">📊 Monthly Performance</div>
+      <div style="display:flex;align-items:center;gap:.5rem;">
+        <select id="chartYearSel" class="page-size-select" onchange="renderChart()" style="min-width:80px;"></select>
+        <button class="xbtn" onclick="closeChart()">✕</button>
+      </div>
+    </div>
+    <div class="chart-body">
+      <!-- View tabs -->
+      <div class="chart-tabs">
+        <button class="chart-tab active" onclick="setChartView('bar',this)">Bar Chart</button>
+        <button class="chart-tab" onclick="setChartView('line',this)">Line Chart</button>
+        <button class="chart-tab" onclick="setChartView('table',this)">Table View</button>
+      </div>
+      <!-- Summary cards -->
+      <div class="chart-summary" style="margin-bottom:1.25rem;">
+        <div class="cs-card"><div class="cs-lbl">Year Total</div><div class="cs-val" id="cy-total">—</div></div>
+        <div class="cs-card"><div class="cs-lbl">Paid</div><div class="cs-val c-paid" id="cy-paid">—</div></div>
+      </div>
+      <!-- Chart canvas -->
+      <div class="chart-wrap" id="chartWrap">
+        <canvas id="perfChart"></canvas>
+      </div>
+      <!-- Table view -->
+      <div class="chart-tbl-wrap" id="chartTblWrap" style="display:none;">
+        <table class="chart-tbl">
+          <thead><tr>
+            <th>Month</th>
+            <th class="r">Total</th>
+            <th class="r">Invoices</th>
+          </tr></thead>
+          <tbody id="chartTblBody"></tbody>
+        </table>
       </div>
     </div>
   </div>
@@ -824,10 +932,8 @@ function renderStats(){
   ge('s1').textContent = cur+fmt(ALL.reduce((s,i)=>s+i.total,0));
   const paid=ALL.filter(i=>i.status==='paid');
   const pend=ALL.filter(i=>i.status==='pending');
-  const over=ALL.filter(i=>i.status==='overdue');
   ge('s2').textContent=paid.length; ge('s2a').textContent=cur+fmt(paid.reduce((s,i)=>s+i.total,0));
   ge('s3').textContent=pend.length; ge('s3a').textContent=cur+fmt(pend.reduce((s,i)=>s+i.total,0));
-  ge('s4').textContent=over.length; ge('s4a').textContent=cur+fmt(over.reduce((s,i)=>s+i.total,0));
 }
 
 /* ═══ FILTER / TABLE ════════════════════════════════════════ */
@@ -1414,6 +1520,183 @@ function stateRow(ico,title,msg){
     <div class="state-msg">${msg}</div>
   </div></td></tr>`;
 }
+
+/* ═══ CHART ═════════════════════════════════════════════════ */
+let perfChart = null;
+let chartView = 'bar';
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function parseInvDate(dateStr){
+  if(!dateStr) return null;
+  const s = dateStr.trim();
+  // 1. DD/MM/YYYY or DD-MM-YYYY (always first)
+  const dmy = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+  if(dmy){ const d=new Date(+dmy[3],+dmy[2]-1,+dmy[1]); if(!isNaN(d)) return d; }
+  // 2. DD-Mon-YYYY or DD Mon YYYY  e.g. 15-Feb-2026
+  const dmy2 = s.match(/^(\d{1,2})[\s\-]([A-Za-z]{3,})[\s\-](\d{4})$/);
+  if(dmy2){ const d=new Date(`${dmy2[2]} ${dmy2[1]} ${dmy2[3]}`); if(!isNaN(d)) return d; }
+  // 3. YYYY-MM-DD (ISO)
+  const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if(iso){ const d=new Date(+iso[1],+iso[2]-1,+iso[3]); if(!isNaN(d)) return d; }
+  // 4. Last resort
+  const d=new Date(s); if(!isNaN(d)) return d;
+  return null;
+}
+
+function buildMonthlyData(year){
+  const data = Array.from({length:12}, (_,i) => ({
+    month: MONTHS[i], paid:0, pending:0, overdue:0, count:0
+  }));
+  ALL.forEach(inv => {
+    const d = parseInvDate(inv.billingDate);
+    if(!d) return;
+    if(d.getFullYear() !== year) return;
+    const mi = d.getMonth();
+    data[mi].count++;
+    if(inv.status === 'paid') data[mi].paid    += inv.total;
+    else                      data[mi].pending += inv.total;
+  });
+  return data;
+}
+
+function getAvailableYears(){
+  const years = new Set();
+  ALL.forEach(inv => {
+    const d = parseInvDate(inv.billingDate);
+    if(d) years.add(d.getFullYear());
+  });
+  return [...years].sort((a,b) => b-a);
+}
+
+function openChart(){
+  if(!ALL.length){ alert('Load data first!'); return; }
+  // Populate year selector
+  const sel = ge('chartYearSel');
+  sel.innerHTML = '';
+  const years = getAvailableYears();
+  if(!years.length){ alert('No dated invoices found.'); return; }
+  years.forEach(y => {
+    const o = document.createElement('option');
+    o.value = y; o.textContent = y;
+    sel.appendChild(o);
+  });
+  ge('chartOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  renderChart();
+}
+
+function closeChart(){
+  ge('chartOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+  if(perfChart){ perfChart.destroy(); perfChart = null; }
+}
+
+function chartOverlayClick(e){ if(e.target === ge('chartOverlay')) closeChart(); }
+
+function setChartView(view, btn){
+  chartView = view;
+  document.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  const isTable = view === 'table';
+  ge('chartWrap').style.display    = isTable ? 'none' : 'block';
+  ge('chartTblWrap').style.display = isTable ? 'block' : 'none';
+  renderChart();
+}
+
+function renderChart(){
+  const year = parseInt(ge('chartYearSel').value);
+  const data = buildMonthlyData(year);
+
+  // Summary totals
+  const totPaid    = data.reduce((s,m) => s+m.paid, 0);
+  const totAll     = totPaid;
+  ge('cy-total').textContent = 'S$ ' + fmt(totAll);
+  ge('cy-paid').textContent  = 'S$ ' + fmt(totPaid);
+
+
+  if(chartView === 'table'){
+    renderChartTable(data);
+    return;
+  }
+
+  // Destroy existing chart
+  if(perfChart){ perfChart.destroy(); perfChart = null; }
+
+  const ctx = ge('perfChart').getContext('2d');
+  const type = chartView === 'line' ? 'line' : 'bar';
+
+  const sharedOpts = {
+    tension: 0.4,
+    pointRadius: chartView === 'line' ? 4 : 0,
+    pointHoverRadius: 6,
+    borderWidth: chartView === 'line' ? 2.5 : 0,
+    fill: chartView === 'line',
+  };
+
+  perfChart = new Chart(ctx, {
+    type,
+    data: {
+      labels: MONTHS,
+      datasets: [
+        {
+          label: 'Total',
+          data: data.map(m => m.paid + m.pending),
+          backgroundColor: chartView === 'line' ? 'rgba(19,48,94,.15)' : 'rgba(19,48,94,.8)',
+          borderColor: 'rgba(19,48,94,1)',
+          ...sharedOpts,
+        },
+
+
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode:'index', intersect:false },
+      plugins: {
+        legend: {
+          position: 'top',
+          labels: { font:{ family:'Outfit,sans-serif', size:12 }, padding:16 }
+        },
+        tooltip: {
+          callbacks: {
+            label: ctx => ` ${ctx.dataset.label}: S$ ${fmt(ctx.raw)}`
+          }
+        }
+      },
+      scales: {
+        x: {
+          stacked: chartView === 'bar',
+          grid: { display:false },
+          ticks: { font:{ family:'Outfit,sans-serif', size:11 } }
+        },
+        y: {
+          stacked: chartView === 'bar',
+          beginAtZero: true,
+          grid: { color:'rgba(210,223,240,.5)' },
+          ticks: {
+            font:{ family:'Outfit,sans-serif', size:11 },
+            callback: v => 'S$' + (v>=1000 ? (v/1000).toFixed(1)+'k' : v)
+          }
+        }
+      }
+    }
+  });
+}
+
+function renderChartTable(data){
+  const rows = data.map(m => {
+    const total = m.paid + m.pending + m.overdue;
+    if(!total && !m.count) return '';
+    return `<tr>
+      <td><b>${m.month}</b></td>
+      <td class="r">S$ ${fmt(total)}</td>
+      <td class="r">${m.count}</td>
+    </tr>`;
+  }).join('');
+  ge('chartTblBody').innerHTML = rows || '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:2rem">No data for this year</td></tr>';
+}
+
 </script>
 </body>
 </html>
