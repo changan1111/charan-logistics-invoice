@@ -238,6 +238,14 @@
 </div>
 
 <script>
+// Prevent back button after logout
+window.addEventListener('pageshow', function(e) {
+  if (e.persisted || performance.getEntriesByType('navigation')[0]?.type === 'back_forward') {
+    if (sessionStorage.getItem('cl_auth') !== '1') {
+      window.location.replace('./login.html');
+    }
+  }
+});
   // ─────────────────────────────────────────────────────────
   //  Hash injected automatically by GitHub Actions on deploy.
   //  Do NOT edit this line manually.
