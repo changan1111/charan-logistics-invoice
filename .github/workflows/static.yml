@@ -24,12 +24,19 @@ jobs:
         run: |
           sed -i "s|SHEET_ID_PLACEHOLDER|${{ secrets.SHEET_ID }}|g" index.html
 
+      - name: Inject Password Hash
+        run: |
+          HASH=$(echo -n "${{ secrets.ACCESS_PASSWORD }}" | sha256sum | awk '{print $1}')
+          sed -i "s|%%ACCESS_HASH%%|$HASH|g" login.html
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: '.'
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
