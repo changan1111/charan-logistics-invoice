@@ -19,7 +19,7 @@ jobs:
       - name: Inject Password Hash into login.html
         run: |
           HASH=$(echo -n "${{ secrets.ACCESS_PASSWORD }}" | sha256sum | awk '{print $1}')
-          sed -i "s|PASSWORD_HASH_PLACEHOLDER|$HASH|g" login.html
+          sed -i "s|%%ACCESS_HASH%%|$HASH|g" login.html
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
