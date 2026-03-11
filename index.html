@@ -639,6 +639,11 @@ tbody tr:hover td{background:var(--ice);cursor:pointer;}
 </div>
 
 <script>
+(function() {
+  if (sessionStorage.getItem('cl_auth') !== '1') {
+    window.location.replace('./login.html');
+  }
+})();
 /* ═══ CONFIG — easy to change ══════════════════════════════ */
 const PAGE_SIZE_OPTIONS = [50, 100]; // add more sizes here if needed in future
 const DEFAULT_PAGE_SIZE = 50;        // default records per page
@@ -686,6 +691,13 @@ window.addEventListener('DOMContentLoaded', ()=>{
   ge('cfgToggle').addEventListener('click',()=>ge('cfgPanel').classList.toggle('hidden'));
   updateSheetLink();
   if(CFG.id) loadData();
+
+    // 👇 SIGN OUT BUTTON — add here
+  const btn = document.createElement('button');
+  btn.textContent = '🚪 Sign Out';
+  btn.style.cssText = 'position:fixed;bottom:18px;right:18px;z-index:9999;padding:8px 14px;background:#0d1117;color:#d4902a;border:1px solid rgba(212,144,42,0.4);border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;';
+  btn.onclick = () => { sessionStorage.removeItem('cl_auth'); window.location.replace('./login.html'); };
+  document.body.appendChild(btn);
 });
 
 /* ═══ CONFIG ════════════════════════════════════════════════ */
