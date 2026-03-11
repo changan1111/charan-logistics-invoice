@@ -2,6 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
+  <style id="hideOnLoad">body { visibility: hidden; }</style>
+  <style id="hideOnLoad">body { visibility: hidden; }</style>
+<script>
+  if (sessionStorage.getItem('cl_auth') === '1') {
+    window.location.replace('./index.html');
+  }
+</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Charan Logistics Invoice — Access</title>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
@@ -339,6 +346,8 @@ window.addEventListener('pageshow', function(e) {
         showError(`Incorrect password — ${left} attempt${left===1?'':'s'} remaining.`);
         document.getElementById('pwInput').value = '';
         document.getElementById('pwInput').focus();
+        document.getElementById('hideOnLoad').textContent = '';
+
       }
     }
   }
