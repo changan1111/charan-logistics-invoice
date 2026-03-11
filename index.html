@@ -639,6 +639,14 @@ tbody tr:hover td{background:var(--ice);cursor:pointer;}
 </div>
 
 <script>
+// Prevent back button into dashboard after logout
+window.addEventListener('pageshow', function(e) {
+  if (e.persisted || performance.getEntriesByType('navigation')[0]?.type === 'back_forward') {
+    if (sessionStorage.getItem('cl_auth') !== '1') {
+      window.location.replace('./login.html');
+    }
+  }
+});
 (function() {
   if (sessionStorage.getItem('cl_auth') !== '1') {
     window.location.replace('./login.html');
