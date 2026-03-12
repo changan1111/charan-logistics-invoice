@@ -420,9 +420,9 @@ tbody tr:hover td{background:var(--ice);cursor:pointer;}
 
 .header-banner {
   width: 100%;
-  overflow: hidden;
-  line-height: 0;
-  background: #fff;
+  height: 130px;
+  background: url('header.png') no-repeat;
+  background-size: 100% 100%;  /* Force full width AND height stretch */
 }
 
 .header-banner-img {
@@ -473,9 +473,8 @@ tbody tr:hover td{background:var(--ice);cursor:pointer;}
 <body>
 
 <!-- NAV -->
-<div class="header-banner">
-  <img src="header.png" alt="Header Banner" class="header-banner-img" />
-</div>
+<div class="header-banner"></div>  <!-- No <img> tag needed -->
+
 <nav class="nav">
   <div class="nav-brand">
     <div class="nav-logo">
