@@ -175,6 +175,25 @@
       width: 18px; height: 18px; border: 2px solid rgba(13,17,23,0.25);
       border-top-color: var(--ink); border-radius: 50%; animation: spin 0.65s linear infinite;
     }
+.header{
+    text-align:center;
+}
+
+.truck-wrap{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    margin-bottom:15px;
+}
+
+.truck-img{
+    width:120px;
+    height:120px;
+    object-fit:cover;
+    border-radius:50%;
+    border:4px solid #c79b3b;
+    transition: opacity 0.8s ease-in-out;
+}
     @keyframes spin { to { transform: rotate(360deg); } }
 
     /* Lockout */
@@ -200,9 +219,8 @@
   <div class="card">
     <div class="card-inner">
 
-      <div class="header">
-<div class="truck-wrap">
-  <img id="truckSlide" src="truck1.png" alt="Charan Logistics Truck" class="truck-img">
+      <div class="truck-wrap">
+    <img id="truckSlide" src="truck1.png" alt="Charan Logistics Truck" class="truck-img">
 </div>
         <div class="co-name">Charan Logistics<br>Pte Ltd</div>
         <div class="co-reg">Reg No: 202502540D · Singapore</div>
@@ -373,28 +391,32 @@ window.addEventListener('pageshow', function(e) {
     }
   }
 // Truck slideshow
-const truckImages = [
-  "Truck1.jpeg",
-  "Truck2.jpeg",
-  "Truck3.jpeg",
-  "Truck4.jpeg"
+<script>
+const images = [
+"truck1.png",
+"truck2.png",
+"truck3.png",
+"truck4.png"
 ];
 
-let truckIndex = 0;
+let index = 0;
+const slide = document.getElementById("truckSlide");
 
 setInterval(() => {
 
-  const img = document.getElementById("truckSlide");
+slide.style.opacity = 0;
 
-  img.style.opacity = 0;
+setTimeout(() => {
 
-  setTimeout(() => {
-    truckIndex = (truckIndex + 1) % truckImages.length;
-    img.src = truckImages[truckIndex];
-    img.style.opacity = 1;
-  }, 200);
+index = (index + 1) % images.length;
+slide.src = images[index];
 
-}, 1000);
+slide.style.opacity = 1;
+
+},400);
+
+},3000);
+</script>
 </script>
 </body>
 </html>
