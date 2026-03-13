@@ -92,6 +92,21 @@
       text-align: center; margin-bottom: 22px;
     }
 
+    .truck-wrap{
+  width:110px;
+  height:110px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+}
+
+.truck-img{
+  max-width:100%;
+  max-height:100%;
+  object-fit:contain;
+  transition:opacity 0.4s ease;
+}
     .error-banner {
       display: flex; align-items: center; gap: 10px;
       padding: 10px 14px;
@@ -187,7 +202,7 @@
 
       <div class="header">
 <div class="truck-wrap">
-  <img src="truck.png" alt="Charan Logistics Truck" class="truck-img">
+  <img id="truckSlide" src="truck1.png" alt="Charan Logistics Truck" class="truck-img">
 </div>
         <div class="co-name">Charan Logistics<br>Pte Ltd</div>
         <div class="co-reg">Reg No: 202502540D · Singapore</div>
@@ -357,6 +372,30 @@ window.addEventListener('pageshow', function(e) {
       }
     }
   }
+// Truck slideshow
+const truckImages = [
+  "truck1.png",
+  "truck2.png",
+  "truck3.png",
+  "truck4.png",
+  "truck5.png"
+];
+
+let truckIndex = 0;
+
+setInterval(() => {
+
+  const img = document.getElementById("truckSlide");
+
+  img.style.opacity = 0;
+
+  setTimeout(() => {
+    truckIndex = (truckIndex + 1) % truckImages.length;
+    img.src = truckImages[truckIndex];
+    img.style.opacity = 1;
+  }, 200);
+
+}, 1000);
 </script>
 </body>
 </html>
