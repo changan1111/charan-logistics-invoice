@@ -12,7 +12,7 @@
       --amber: #d4902a; --amber2: #f0b84a;
       --cream: #f5efe0; --muted: #7a8599; --dim: #3d4a5c; --red: #e05252;
     }
-    html, body { height: 100%; overflow: hidden; font-family: 'IBM Plex Sans', sans-serif; background: var(--ink); }
+    html, body { height: 100%; overflow-x: hidden; overflow-y: auto; font-family: 'IBM Plex Sans', sans-serif; background: var(--ink); }
 
     .bg-base {
       position: fixed; inset: 0; z-index: 0;
@@ -197,7 +197,7 @@
 <div class="collage-wrap">
 <canvas id="circleCollage" width="300" height="300"></canvas>
 </div>
-        <div class="form-title"><br>Charan Logistics Pte Ltd<br></div>
+        <div class="form-title">Charan Logistics Pte Ltd</div>
         <div class="form-title">Reg No: 202502540D · Singapore</div>
         <div class="divider">
           <div class="divider-line"></div><div class="divider-dot"></div><div class="divider-line"></div>
@@ -207,7 +207,6 @@
       <!-- Login form -->
       <div id="formArea">
         <div class="form-title">🔒 Authorised Access Only</div>
-
         <div class="error-banner" id="errBanner">
           <span>⚠</span><span id="errText">Incorrect password.</span>
         </div>
