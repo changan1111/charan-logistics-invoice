@@ -195,7 +195,7 @@
     <div class="card-inner">
 
 <div class="collage-wrap">
-  <canvas id="circleCollage" width="150" height="150"></canvas>
+<canvas id="circleCollage" width="200" height="200"></canvas>
 </div>
         <div class="co-name">Charan Logistics<br>Pte Ltd</div>
         <div class="co-reg">Reg No: 202502540D · Singapore</div>
@@ -276,16 +276,16 @@ window.addEventListener('pageshow', function(e) {
   ];
   // =============================================
 
-  const SIZE = 480, CX = 240, CY = 240, R = 240, BORDER = 10;
+const SIZE = 200, CX = 100, CY = 100, R = 100, BORDER = 6;
   const canvas = document.getElementById('circleCollage');
   const ctx = canvas.getContext('2d');
 
-  const quads = [
-    { x: 0,   y: 0,   w: CX, h: CY }, // top-left
-    { x: CX,  y: 0,   w: CX, h: CY }, // top-right
-    { x: 0,   y: CY,  w: CX, h: CY }, // bottom-left
-    { x: CX,  y: CY,  w: CX, h: CY }, // bottom-right
-  ];
+const quads = [
+  { x: 0,   y: 0,   w: CX, h: CY }, // top-left
+  { x: CX,  y: 0,   w: CX, h: CY }, // top-right
+  { x: 0,   y: CY,  w: CX, h: CY }, // bottom-left
+  { x: CX,  y: CY,  w: CX, h: CY }, // bottom-right
+];
 
   function loadImage(src) {
     return new Promise((resolve) => {
